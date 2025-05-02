@@ -1,7 +1,5 @@
 // pages/DashboardPage.js
 import React, {useState} from "react";
-import {signOut} from "firebase/auth";
-import {auth} from "../firebase";
 import {ConfigProvider, Layout, Row, Statistic} from "antd";
 import bgVideo from '../assets/Tapelect-Bg.mp4'
 
@@ -11,7 +9,6 @@ function DashboardPage() {
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
     } catch (err) {
       console.error(err);
     }

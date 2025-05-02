@@ -1,7 +1,5 @@
 // pages/DashboardPage.js
 import React, {useCallback, useState} from "react";
-import {signOut} from "firebase/auth";
-import {auth} from "../firebase";
 import {Avatar, Col, ConfigProvider, Form, Input, Layout, List, Row, Space, Statistic, Typography} from "antd";
 import {debounce} from "lodash";
 import supabase from "../supabase.js";
