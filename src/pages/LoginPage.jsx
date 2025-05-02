@@ -45,13 +45,6 @@ const LoginPage = () => {
           onFinishFailed={onFinishFailed}
           autoComplete="off"
           size={'large'}
-          labelWrap
-          wrapperCol={{
-            sm: {span: 3, offset: 12}
-          }}
-          labelCol={{
-            sm: {span: 3, offset: 12}
-          }}
         >
           <Form.Item noStyle style={{marginTop: -20}}>
             <svg width="300" height="304" viewBox="0 0 938 304" fill="none" xmlns="http://www.w3.org/2000/svg">

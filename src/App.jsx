@@ -1,5 +1,5 @@
 // App.js
-import {BrowserRouter as Router, Routes, Route} from "react-router-dom";
+import {BrowserRouter as Router, Routes, Route, Navigate} from "react-router-dom";
 import Login from "./pages/LoginPage.jsx";
 import DashboardPage from "./pages/DashboardPage.jsx";
 import PrivateRoute from "./components/PrivateRoute";
@@ -23,6 +23,7 @@ function App() {
       <AuthProvider>
         <Router>
           <Routes>
+            <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Login/>}/>
             <Route exact path="/dash" element={<PrivateRoute><DashboardPage/></PrivateRoute>}/>
             <Route exact path="/search" element={<PrivateRoute><SearchPage/></PrivateRoute>}/>
