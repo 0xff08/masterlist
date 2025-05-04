@@ -1,34 +1,100 @@
 // pages/DashboardPage.js
 import React, {useCallback, useState} from "react";
-import {Avatar, Col, ConfigProvider, Form, Input, Layout, List, Row, Space, Statistic, Typography} from "antd";
+import {
+  AutoComplete,
+  Avatar,
+  Button,
+  Col,
+  ConfigProvider,
+  Form,
+  Input,
+  Layout,
+  List,
+  Row,
+  Select,
+  Space,
+  Statistic,
+  Typography
+} from "antd";
 import {debounce} from "lodash";
 import supabase from "../supabase.js";
 import VirtualList from 'rc-virtual-list';
 import {SwipeAction} from "antd-mobile";
-import {HeartFilled, HeartOutlined} from "@ant-design/icons";
+import {CheckOutlined, HeartFilled, HeartOutlined, RollbackOutlined} from "@ant-design/icons";
+import {Navigate} from "react-router-dom";
 
 function SearchPage() {
   const [data, setData] = useState([]);
+  const [focalLeader, setFocalLeader] = useState(null);
+  const [focalLeaders, setFocalLeaders] = useState([]);
+  const [liner, setLiner] = useState(null);
 
   const debouncedUpdate = useCallback(
-    debounce(async ({last_name, first_name, precinct_no, address}) => {
-      // setFormData(values);
-      const {data, error} = await supabase
-        .from('dataflux827')
-        .select('*')
-        .ilike(`name`, `%${last_name || ''}%`)
-        .ilike(`name`, `%${first_name || ''}%`)
-        .ilike(`precinct`, `%${precinct_no || ''}%`)
-        .ilike(`address`, `%${address || ''}%`)
-        .limit(10)
-      setData(data);
+    debounce(async ({fp, text, position}) => {
+      console.log(`searching "${fp.trim()}" for liner: "${text}"`);
 
-    }, 1000),
+      if (text === '' && position === 'liner') {
+        const {data, error} = await supabase
+          .from('vuBue8Fiesa3')
+          .select('*')
+          .eq('fp', fp)
+          .limit(10)
+
+        setData(data);
+
+        return
+      }
+
+      if (text.length > 0 && position === 'liner' && fp) {
+        let tts = text.trim().split(' ').join(':* & ').concat(`:*`)
+        // console.log(tts)
+
+        const {data, error} = await supabase
+          .from('vuBue8Fiesa3')
+          .select('*')
+          .eq('fp', fp)
+          .textSearch(
+            'liner', tts
+          )
+          .order('liner', 'ascending')
+          .limit(10)
+
+        setData(data);
+
+        return
+      }
+
+      let tts = text.split(' ').join(':* & ').concat(`:*`)
+      console.log(tts)
+
+      const table = position === 'fp' ? 'vubue8fiesa3_fp' : 'vuBue8Fiesa3'
+
+      const {data, error} = await supabase
+        .from(table)
+        .select('*')
+        .textSearch(
+          position, `${tts}`
+        )
+        .limit(10)
+
+      if (position === 'fp') {
+        console.log(data)
+        setFocalLeaders((data || [])
+          .map(v => ({
+            label: <b style={{textTransform: 'uppercase'}}>{v.fp.trim()}</b>,
+            value: v.fp
+          })))
+      }
+      if (position === 'liner') {
+        setData(data);
+      }
+
+    }, 500),
     []
   );
 
   const markAsDone = async (user) => {
-    const {data, error} = await supabase.from('dataflux827')
+    const {data, error} = await supabase.from('vuBue8Fiesa3')
       .update({status: 1, updated_at: new Date()})
       .eq('id', user.id)
       .select()
@@ -37,7 +103,7 @@ function SearchPage() {
   }
 
   const markAsUndone = async (user) => {
-    const {data, error} = await supabase.from('dataflux827')
+    const {data, error} = await supabase.from('vuBue8Fiesa3')
       .update({status: 0, updated_at: new Date()})
       .eq('id', user.id)
       .select()
@@ -45,6 +111,16 @@ function SearchPage() {
     setData(data)
   }
 
+  const onSelect = value => {
+    console.log(`selected ${value}`);
+    setFocalLeader(value);
+
+    debouncedUpdate({fp: value, text: '', position: 'liner'});
+  };
+
+  const onSearch = value => {
+    console.log('search:', value);
+  };
 
   return (
     <Col style={{height: '100%', width: '100vw'}}>
@@ -53,19 +129,44 @@ function SearchPage() {
           name="searchForm"
           style={{width: '100%'}}
           size="large"
-          onValuesChange={(_, allValues) => debouncedUpdate(allValues)}>
+          onValuesChange={({liner}) => {
+            setLiner(liner)
+            debouncedUpdate({text: liner, position: 'liner', fp: focalLeader});
+          }}
+        >
           <Space direction="vertical" style={{width: '100%'}}>
-            <Form.Item name="last_name" noStyle>
-              <Input size={"large"} placeholder="Last Name" allowClear/>
+            {/*<Form.Item hidden name="last_name" noStyle>*/}
+            {/*  <Input size={"large"} placeholder="Last Name" allowClear/>*/}
+            {/*</Form.Item>*/}
+            {/*<Form.Item hidden name="first_name" noStyle>*/}
+            {/*  <Input size={"large"} placeholder="First Name" allowClear/>*/}
+            {/*</Form.Item>*/}
+            {/*<Form.Item hidden name="precinct_no" noStyle>*/}
+            {/*  <Input size={"large"} placeholder="Precinct No." allowClear/>*/}
+            {/*</Form.Item>*/}
+            {/*<Form.Item hidden name="address" noStyle>*/}
+            {/*  <Input size={"large"} placeholder="Address" allowClear/>*/}
+            {/*</Form.Item>*/}
+            <Form.Item name="focal_leader" noStyle>
+              {/*<Input size={"large"} placeholder="Focal Leader" allowClear/>*/}
+              <AutoComplete
+                style={{width: '100%'}}
+                options={focalLeaders}
+                size='large'
+                onSelect={onSelect}
+                onSearch={text => {
+                  debouncedUpdate({text, position: 'fp'});
+                }}
+                placeholder="Focal Leader"
+              />
             </Form.Item>
-            <Form.Item name="first_name" noStyle>
-              <Input size={"large"} placeholder="First Name" allowClear/>
-            </Form.Item>
-            <Form.Item name="precinct_no" noStyle>
-              <Input size={"large"} placeholder="Precinct No." allowClear/>
-            </Form.Item>
-            <Form.Item name="address" noStyle>
-              <Input size={"large"} placeholder="Address" allowClear/>
+
+            <Form.Item name="liner" noStyle>
+              <Input
+                size={"large"}
+                placeholder="Liner"
+                allowClear
+              />
             </Form.Item>
           </Space>
         </Form>
@@ -83,10 +184,15 @@ function SearchPage() {
               <SwipeAction
                 key={user.id}
                 rightActions={[
-                  {key: "done", text: "Done", color: "primary", onClick: () => markAsDone(user)},
+                  {
+                    key: "done",
+                    text: <CheckOutlined style={{fontWeight: 700, fontSize: '24px', color: '#24AC58'}}/>,
+                    color: 'light',
+                    onClick: () => markAsDone(user)
+                  },
                 ]}
                 leftActions={[
-                  {key: "undo", text: "Undo", color: "light", onClick: () => markAsUndone(user)},
+                  {key: "undo", text: <RollbackOutlined/>, color: "light", onClick: () => markAsUndone(user)},
                 ]}
                 style={{
                   margin: '0 5px 0 5px'
@@ -94,11 +200,13 @@ function SearchPage() {
               >
                 <List.Item style={{margin: '0 10px 0 10px'}}>
                   <List.Item.Meta
-                    avatar={<Avatar size={50} shape="square" style={{color: 'dimgray'}}><b>{user.precinct}</b></Avatar>}
-                    title={user.name}
+                    title={<div
+                      style={{textTransform: 'uppercase'}}>{user.liner}</div>}
                     description={<Space>
-                      <b>District {user.district}</b>
-                      <Typography.Text>{user.address}</Typography.Text>
+                      {/*<b>{user.precinct_no}</b>*/}
+                      {/*<Typography.Text*/}
+                      {/*  style={{textTransform: 'capitalize'}}>district {user.district}, {user.barangay}, {user.zone}*/}
+                      {/*</Typography.Text>*/}
                     </Space>
                     }
                   />
@@ -108,6 +216,9 @@ function SearchPage() {
             )}
           </VirtualList>
         </List>
+      </Row>
+      <Row align="bottom">
+        <Button block style={{margin: 10}} size="large"><b>LOGOUT</b></Button>
       </Row>
     </Col>
 
