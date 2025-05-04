@@ -132,8 +132,8 @@ function SearchPage() {
   };
 
   return (
-    <Col style={{height: '100%', width: '100vw'}}>
-      <Row size={5} direction="vertical" style={{padding: '10px 5px 10px 5px', width: '100%'}}>
+    <Layout style={{height: '100vh', width: '100vw'}} d>
+      <Row size={5} direction="vertical" style={{height: 110, padding: '10px 5px 10px 5px', width: '100%'}}>
         <Form
           name="searchForm"
           style={{width: '100%'}}
@@ -180,12 +180,12 @@ function SearchPage() {
           </Space>
         </Form>
       </Row>
-      <Row>
-        <List style={{width: '100%', overflowY: 'auto'}} rowKey="id">
+      <Row style={{width: '100%', height: '100%', overflowY: 'hidden'}}>
+        <List style={{width: '100%', height: '100%', overflowY: 'auto'}} rowKey="id">
           <VirtualList
             data={data}
-            height={600}
-            itemKey="uuid"
+            height="100%"
+            itemKey="id"
             onScroll={() => {
             }}
           >
@@ -213,9 +213,11 @@ function SearchPage() {
                       style={{textTransform: 'uppercase'}}>{user.liner}</div>}
                     description={<Space>
                       {/*<b>{user.precinct_no}</b>*/}
-                      {/*<Typography.Text*/}
-                      {/*  style={{textTransform: 'capitalize'}}>district {user.district}, {user.barangay}, {user.zone}*/}
-                      {/*</Typography.Text>*/}
+                      <Typography.Text
+                        style={{textTransform: 'capitalize'}}
+                      >
+                        {user.address}
+                      </Typography.Text>
                     </Space>
                     }
                   />
@@ -226,10 +228,10 @@ function SearchPage() {
           </VirtualList>
         </List>
       </Row>
-      <Row align="bottom">
+      <Row align="bottom" style={{height: 60, bottom: 0, width: '100%'}}>
         <Button block style={{margin: 10}} size="large" onClick={()=>{navigate('/logout')}}><b>LOGOUT</b></Button>
       </Row>
-    </Col>
+    </Layout>
 
   );
 }
