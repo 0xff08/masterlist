@@ -40,8 +40,8 @@ function DashboardPage() {
     fetchCount(); // Initial count
 
     const subscription = supabase
-      .channel("aidaem4Eitha_changes")
-      .on("postgres_changes", {event: "*", schema: "public", table: "aidaem4Eitha"}, () => {
+      .channel("vuBue8Fiesa3_changes")
+      .on("postgres_changes", {event: "*", schema: "public", table: "vuBue8Fiesa3"}, () => {
         fetchCount(); // Fetch new count on change
       })
       .subscribe();
