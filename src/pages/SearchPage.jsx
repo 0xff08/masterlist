@@ -33,8 +33,8 @@ function SearchPage() {
 
   const debouncedUpdate = useCallback(
     debounce(async ({fp, text, position}) => {
-
-      if (text === '' && position === 'liner') {
+      console.log({fp, text, position})
+      if (!text && position === 'liner') {
         console.log(`searching "${fp}" for liner: "${text}"`);
 
         const {data, error} = await supabase
@@ -49,7 +49,7 @@ function SearchPage() {
         return
       }
 
-      if (text.length > 0 && position === 'liner' && fp) {
+      if (text && position === 'liner' && fp) {
         console.log(`searching "${fp}" for liner: "${text}"`);
 
         let tts = text.trim().split(' ').join(':* & ').concat(`:*`)
@@ -181,7 +181,7 @@ function SearchPage() {
         </Form>
       </Row>
       <Row>
-        <List style={{width: '100%', overflowY: 'auto'}}>
+        <List style={{width: '100%', overflowY: 'auto'}} rowKey="id">
           <VirtualList
             data={data}
             height={600}
