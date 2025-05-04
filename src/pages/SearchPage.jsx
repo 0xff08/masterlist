@@ -21,9 +21,11 @@ import supabase from "../supabase.js";
 import VirtualList from 'rc-virtual-list';
 import {SwipeAction} from "antd-mobile";
 import {CheckOutlined, HeartFilled, HeartOutlined, RollbackOutlined} from "@ant-design/icons";
-import {Navigate} from "react-router-dom";
+import {Navigate, useNavigate} from "react-router-dom";
 
 function SearchPage() {
+  const navigate = useNavigate();
+
   const [data, setData] = useState([]);
   const [focalLeader, setFocalLeader] = useState(null);
   const [focalLeaders, setFocalLeaders] = useState([]);
@@ -31,9 +33,10 @@ function SearchPage() {
 
   const debouncedUpdate = useCallback(
     debounce(async ({fp, text, position}) => {
-      console.log(`searching "${fp.trim()}" for liner: "${text}"`);
 
       if (text === '' && position === 'liner') {
+        console.log(`searching "${fp}" for liner: "${text}"`);
+
         const {data, error} = await supabase
           .from('vuBue8Fiesa3')
           .select('*')
@@ -46,6 +49,8 @@ function SearchPage() {
       }
 
       if (text.length > 0 && position === 'liner' && fp) {
+        console.log(`searching "${fp}" for liner: "${text}"`);
+
         let tts = text.trim().split(' ').join(':* & ').concat(`:*`)
         // console.log(tts)
 
@@ -64,8 +69,9 @@ function SearchPage() {
         return
       }
 
+      console.log(`searching fp "${text}"`);
+
       let tts = text.split(' ').join(':* & ').concat(`:*`)
-      console.log(tts)
 
       const table = position === 'fp' ? 'vubue8fiesa3_fp' : 'vuBue8Fiesa3'
 
@@ -218,7 +224,7 @@ function SearchPage() {
         </List>
       </Row>
       <Row align="bottom">
-        <Button block style={{margin: 10}} size="large"><b>LOGOUT</b></Button>
+        <Button block style={{margin: 10}} size="large" onClick={()=>{navigate('/logout')}}><b>LOGOUT</b></Button>
       </Row>
     </Col>
 
