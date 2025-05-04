@@ -41,7 +41,8 @@ function SearchPage() {
           .from('vuBue8Fiesa3')
           .select('*')
           .eq('fp', fp)
-          .limit(10)
+          .order('liner', 'ascending')
+          .limit(50)
 
         setData(data);
 
@@ -62,7 +63,7 @@ function SearchPage() {
             'liner', tts
           )
           .order('liner', 'ascending')
-          .limit(10)
+          .limit(50)
 
         setData(data);
 
@@ -81,6 +82,7 @@ function SearchPage() {
         .textSearch(
           position, `${tts}`
         )
+        .order('fp', 'ascending')
         .limit(10)
 
       if (position === 'fp') {
@@ -103,18 +105,19 @@ function SearchPage() {
     const {data, error} = await supabase.from('vuBue8Fiesa3')
       .update({status: 1, updated_at: new Date()})
       .eq('id', user.id)
-      .select()
 
-    setData(data)
+    debouncedUpdate({text: liner, position: 'liner', fp: focalLeader});
+
+    // setData(data)
   }
 
   const markAsUndone = async (user) => {
     const {data, error} = await supabase.from('vuBue8Fiesa3')
       .update({status: 0, updated_at: new Date()})
       .eq('id', user.id)
-      .select()
 
-    setData(data)
+    debouncedUpdate({text: liner, position: 'liner', fp: focalLeader});
+    // setData(data)
   }
 
   const onSelect = value => {
