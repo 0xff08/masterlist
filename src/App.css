@@ -28,7 +28,7 @@
   text-align: center;
 }
 
-#searchForm_focal_leader, #searchForm_liner {
+#searchForm_focal_leader, #searchForm_liner, .ant-select-selection-placeholder {
   text-transform: uppercase;
   font-weight: bold;
 }

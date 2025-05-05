@@ -52,7 +52,6 @@ function SearchPage() {
           .select('*')
           .eq('fp', fp)
           .order('liner', 'ascending')
-          .limit(50)
 
         setData(data);
 
@@ -73,7 +72,6 @@ function SearchPage() {
             'liner', tts
           )
           .order('liner', 'ascending')
-          .limit(50)
 
         setData(data);
 
@@ -93,7 +91,6 @@ function SearchPage() {
           position, `${tts}`
         )
         .order('fp', 'ascending')
-        .limit(10)
 
       if (position === 'fp') {
         console.log(data)
@@ -163,7 +160,7 @@ function SearchPage() {
           <Space direction="vertical" style={{width: '100%'}}>
             <Form.Item name="focal_leader" noStyle>
               <AutoComplete
-                style={{width: '100%', textTransform: 'capitalize'}}
+                style={{width: '100%'}}
                 options={focalLeaders}
                 size='large'
                 onSelect={onSelect}
@@ -180,6 +177,7 @@ function SearchPage() {
                 size={"large"}
                 placeholder="Liner"
                 allowClear
+                autocomplete="off"
               />
             </Form.Item>
           </Space>
