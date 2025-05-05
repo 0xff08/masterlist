@@ -9,6 +9,7 @@ import {ConfigProvider} from "antd";
 import SearchPage from "./pages/SearchPage.jsx";
 import LogoutPage from "./pages/LogoutPage.jsx";
 import {AuthProvider} from "./AuthProvider.jsx";
+import LeaderBoard from "./pages/LeaderBoard.jsx";
 
 function App() {
 
@@ -26,6 +27,7 @@ function App() {
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Login/>}/>
             <Route exact path="/dash" element={<PrivateRoute><DashboardPage/></PrivateRoute>}/>
+            <Route exact path="/leaderboard" element={<PrivateRoute><LeaderBoard/></PrivateRoute>}/>
             <Route exact path="/search" element={<PrivateRoute><SearchPage/></PrivateRoute>}/>
             <Route exact path="/logout" element={<PrivateRoute><LogoutPage/></PrivateRoute>}/>
           </Routes>
