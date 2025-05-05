@@ -27,3 +27,8 @@
   color: white;
   text-align: center;
 }
+
+#searchForm_focal_leader, #searchForm_liner {
+  text-transform: uppercase;
+  font-weight: bold;
+}

@@ -1,5 +1,5 @@
 // pages/DashboardPage.js
-import React, {useCallback, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {
   AutoComplete,
   Avatar,
@@ -30,6 +30,16 @@ function SearchPage() {
   const [focalLeader, setFocalLeader] = useState(null);
   const [focalLeaders, setFocalLeaders] = useState([]);
   const [liner, setLiner] = useState(null);
+  const [loginUser, setLoginUser] = useState(null);
+
+  useEffect(()=>{
+    const getUserInfo = async()=>{
+      const {data, error} = await supabase.auth.getUser()
+      console.log('user',data.user)
+      setLoginUser(data.user)
+    }
+    getUserInfo()
+  },[])
 
   const debouncedUpdate = useCallback(
     debounce(async ({fp, text, position}) => {
@@ -103,7 +113,11 @@ function SearchPage() {
 
   const markAsDone = async (user) => {
     const {data, error} = await supabase.from('vuBue8Fiesa3')
-      .update({status: 1, updated_at: new Date()})
+      .update({
+        status: 1,
+        updated_at: new Date(),
+        updated_by: loginUser.id
+      })
       .eq('id', user.id)
 
     debouncedUpdate({text: liner, position: 'liner', fp: focalLeader});
@@ -113,11 +127,14 @@ function SearchPage() {
 
   const markAsUndone = async (user) => {
     const {data, error} = await supabase.from('vuBue8Fiesa3')
-      .update({status: 0, updated_at: new Date()})
+      .update({
+        status: 0,
+        updated_at: new Date(),
+        updated_by: loginUser.id
+      })
       .eq('id', user.id)
 
     debouncedUpdate({text: liner, position: 'liner', fp: focalLeader});
-    // setData(data)
   }
 
   const onSelect = value => {
@@ -132,7 +149,7 @@ function SearchPage() {
   };
 
   return (
-    <Layout style={{height: '100vh', width: '100vw'}} d>
+    <Layout style={{height: '100vh', width: '100vw'}}>
       <Row size={5} direction="vertical" style={{height: 110, padding: '10px 5px 10px 5px', width: '100%'}}>
         <Form
           name="searchForm"
@@ -144,28 +161,16 @@ function SearchPage() {
           }}
         >
           <Space direction="vertical" style={{width: '100%'}}>
-            {/*<Form.Item hidden name="last_name" noStyle>*/}
-            {/*  <Input size={"large"} placeholder="Last Name" allowClear/>*/}
-            {/*</Form.Item>*/}
-            {/*<Form.Item hidden name="first_name" noStyle>*/}
-            {/*  <Input size={"large"} placeholder="First Name" allowClear/>*/}
-            {/*</Form.Item>*/}
-            {/*<Form.Item hidden name="precinct_no" noStyle>*/}
-            {/*  <Input size={"large"} placeholder="Precinct No." allowClear/>*/}
-            {/*</Form.Item>*/}
-            {/*<Form.Item hidden name="address" noStyle>*/}
-            {/*  <Input size={"large"} placeholder="Address" allowClear/>*/}
-            {/*</Form.Item>*/}
             <Form.Item name="focal_leader" noStyle>
-              {/*<Input size={"large"} placeholder="Focal Leader" allowClear/>*/}
               <AutoComplete
-                style={{width: '100%'}}
+                style={{width: '100%', textTransform: 'capitalize'}}
                 options={focalLeaders}
                 size='large'
                 onSelect={onSelect}
                 onSearch={text => {
                   debouncedUpdate({text, position: 'fp'});
                 }}
+                allowClear
                 placeholder="Focal Leader"
               />
             </Form.Item>
