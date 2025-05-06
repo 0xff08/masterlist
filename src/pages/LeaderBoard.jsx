@@ -12,7 +12,7 @@ function LeaderBoard() {
   const [leaders, setLeaders] = useState(null);
   const [overall, setOverall] = useState(false);
   const [pagination, setPagination] = useState(
-    {current: 1, pageSize: 10, total: null, currentPage: 1}
+    {current: 1, pageSize: 10}
   );
 
   const [loading, setLoading] = useState(false);
@@ -22,14 +22,14 @@ function LeaderBoard() {
     const startIndex = (page - 1) * pageSize;
     const endIndex = startIndex + pageSize - 1
 
-    const {data, error} = await supabase
+    const {data, count, error} = await supabase
       .from('vubue8fiesa3_by_fp')
-      .select('*')
+      .select('*', { count: 'exact' })
       .range(startIndex, endIndex);
 
     if (data) {
-      setPagination((prev) => ({...prev, total: overall.total_fp})); // Update total count
       setLeaders(data);
+      setPagination((prev) => ({...prev, total: count})); // Update total count
       setLoading(false);
     }
   };
@@ -41,14 +41,6 @@ function LeaderBoard() {
       .limit(100)
     setOverall(data[0])
   }
-
-  useEffect(() => {
-
-    if (!overall?.total_fp && !pagination.total) {
-      setPagination((prev) => ({...prev, total: overall.total_fp})); // Update total count
-    }
-
-  }, [overall]);
 
   useEffect(() => {
     const getSeedAmount = async () => {
@@ -65,6 +57,7 @@ function LeaderBoard() {
     }
 
     fetchOverall()
+    fetchCount(pagination.current, pagination.pageSize)
 
     const subscription = supabase
       .channel("vubue8fiesa3_changes")
@@ -96,7 +89,7 @@ function LeaderBoard() {
   };
 
   return (
-    <Layout style={{width: '100vw', height: '100vh', margin: 0, padding: 0}}>
+    <Layout style={{width: '100vw', height: '100vh', margin: 0, padding: 0, overflowY: 'hidden'}}>
       <Row gutter={10} style={{margin: '20px 5px 10px 5px'}}>
         <Col span={12}>
           <Card variant="borderless">
@@ -134,7 +127,7 @@ function LeaderBoard() {
         rowKey='fp'
         dataSource={leaders}
         size="small"
-        scroll={{y: 800}}
+        scroll={{ y: "calc(100vh - 220px)", x: "calc(100vh - 20px)"}}
         pagination={{
           current: pagination.current,
           pageSize: pagination.pageSize,
