@@ -35,7 +35,7 @@ function SearchPage() {
   useEffect(()=>{
     const getUserInfo = async()=>{
       const {data, error} = await supabase.auth.getUser()
-      console.log('user',data.user)
+      // console.log('user',data.user)
       setLoginUser(data.user)
     }
     getUserInfo()
@@ -43,9 +43,9 @@ function SearchPage() {
 
   const debouncedUpdate = useCallback(
     debounce(async ({fp, text, position}) => {
-      console.log({fp, text, position})
+      // console.log({fp, text, position})
       if (!text && position === 'liner') {
-        console.log(`searching "${fp}" for liner: "${text}"`);
+        // console.log(`searching "${fp}" for liner: "${text}"`);
 
         const {data, error} = await supabase
           .from('vuBue8Fiesa3')
@@ -59,10 +59,10 @@ function SearchPage() {
       }
 
       if (text && position === 'liner' && fp) {
-        console.log(`searching "${fp}" for liner: "${text}"`);
+        // console.log(`searching "${fp}" for liner: "${text}"`);
 
         let tts = text.trim().split(' ').join(':* & ').concat(`:*`)
-        // console.log(tts)
+        // // console.log(tts)
 
         const {data, error} = await supabase
           .from('vuBue8Fiesa3')
@@ -78,7 +78,7 @@ function SearchPage() {
         return
       }
 
-      console.log(`searching fp "${text}"`);
+      // console.log(`searching fp "${text}"`);
 
       let tts = text.split(' ').join(':* & ').concat(`:*`)
 
@@ -93,7 +93,7 @@ function SearchPage() {
         .order('fp', 'ascending')
 
       if (position === 'fp') {
-        console.log(data)
+        // console.log(data)
         setFocalLeaders((data || [])
           .map(v => ({
             label: <b style={{textTransform: 'uppercase'}}>{v.fp.trim()}</b>,
@@ -135,14 +135,14 @@ function SearchPage() {
   }
 
   const onSelect = value => {
-    console.log(`selected ${value}`);
+    // console.log(`selected ${value}`);
     setFocalLeader(value);
 
     debouncedUpdate({fp: value, text: '', position: 'liner'});
   };
 
   const onSearch = value => {
-    console.log('search:', value);
+    // console.log('search:', value);
   };
 
   return (

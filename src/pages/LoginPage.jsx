@@ -16,7 +16,7 @@ const LoginPage = () => {
       const {data, error} = await supabase.auth.signInWithPassword({email, password});
       // Redirect to dashboard after successful login
       if (!error) {
-        console.log(data);
+        // console.log(data);
         navigate("/search");
       }
       setError(error.message)
@@ -28,7 +28,7 @@ const LoginPage = () => {
   }
 
   const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo);
+    // console.log('Failed:', errorInfo);
   };
 
   return (

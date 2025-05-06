@@ -15,7 +15,7 @@ function Debug() {
           }}
           layout={'horizontal'}
           onFinish={({users})=>{
-            // console.log(users);
+            // // console.log(users);
             users.trim().split('\n').map(async(line) => {
               const [email, password] = line.split('\t')
 
@@ -24,7 +24,7 @@ function Debug() {
                 password: password.trim()
               })
 
-              console.log({data, error})
+              // console.log({data, error})
             })
           }}
         >

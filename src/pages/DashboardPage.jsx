@@ -19,7 +19,7 @@ function DashboardPage() {
         .from('tblX9A2B7GK')
         .select('*')
         .limit(1)
-      console.log(data)
+      // console.log(data)
       setSeedAmount(data[0].seed)
       setMultiplier(data[0].multiplier)
     }
@@ -33,7 +33,7 @@ function DashboardPage() {
     const fetchCount = async () => {
       const {data, error} = await supabase
         .rpc('count_status1')
-      console.log('count', data)
+      // console.log('count', data)
       if (data) setCount(data);
     };
 

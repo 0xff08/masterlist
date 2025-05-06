@@ -44,7 +44,7 @@ function LeaderBoard() {
 
   useEffect(() => {
 
-    if(!overall?.total_fp && !pagination.total){
+    if (!overall?.total_fp && !pagination.total) {
       setPagination((prev) => ({...prev, total: overall.total_fp})); // Update total count
     }
 
@@ -56,7 +56,6 @@ function LeaderBoard() {
         .from('tblX9A2B7GK')
         .select('*')
         .limit(1)
-      console.log(data)
       setSeedAmount(data[0].seed)
       setMultiplier(data[0].multiplier)
     }
@@ -135,7 +134,7 @@ function LeaderBoard() {
         rowKey='fp'
         dataSource={leaders}
         size="small"
-        scroll={{ y: 800 }}
+        scroll={{y: 800}}
         pagination={{
           current: pagination.current,
           pageSize: pagination.pageSize,
