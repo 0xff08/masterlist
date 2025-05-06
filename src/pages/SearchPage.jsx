@@ -177,7 +177,6 @@ function SearchPage() {
                 size={"large"}
                 placeholder="Liner"
                 allowClear
-                autocomplete="off"
               />
             </Form.Item>
           </Space>
