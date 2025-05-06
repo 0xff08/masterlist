@@ -11,6 +11,10 @@
   overflow: hidden;
 }
 
+.ant-card-body{
+  padding: 12px !important;
+}
+
 .background-video {
   position: absolute;
   top: 0;
