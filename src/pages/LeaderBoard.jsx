@@ -96,7 +96,7 @@ function LeaderBoard() {
 
   return (
     <Layout style={{
-      width: '100vw', height: '100vh', margin: 0, padding: 0, overflowY: 'hidden', overflowX: 'auto',
+      width: '100vw', height: '100vh', margin: 0, padding: 0, overflowX: 'auto',
       minWidth: 350
     }}>
       <Row style={{marginTop: 10}}>
@@ -216,7 +216,7 @@ function LeaderBoard() {
         rowKey='fp'
         dataSource={leaders}
         size="small"
-        scroll={{y: "calc(100vh - 300px)", x: "calc(100vh - 200px)"}}
+        scroll={{y: `calc(100vh - ${screens.xs?'150':'300'}px)`, x: "calc(100vh - 200px)"}}
         pagination={{
           current: pagination.current, pageSize: pagination.pageSize, total: pagination.total, // Ensure total count is set
           showSizeChanger: true, pageSizeOptions: ["10", "20", "50", "100"], onChange: (page, pageSize) => {
@@ -244,7 +244,7 @@ function LeaderBoard() {
           }, {
             title: 'PROGRESS',
             fixed: 'right',
-            width: screens.xs ? 100 : 300,
+            width: screens.xs ? 100 : 200,
             render: (_, record) => {
               return (<ConfigProvider
                 theme={{
