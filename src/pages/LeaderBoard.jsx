@@ -18,7 +18,7 @@ function LeaderBoard() {
   const [loading, setLoading] = useState(false);
 
   const fetchCount = async (page, pageSize) => {
-    setLoading(true);
+    // setLoading(true);
     const startIndex = (page - 1) * pageSize;
     const endIndex = startIndex + pageSize - 1
 
@@ -30,7 +30,7 @@ function LeaderBoard() {
     if (data) {
       setLeaders(data);
       setPagination((prev) => ({...prev, total: count})); // Update total count
-      setLoading(false);
+      // setLoading(false);
     }
   };
 
