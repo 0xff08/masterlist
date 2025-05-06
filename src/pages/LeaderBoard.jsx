@@ -86,7 +86,7 @@ function LeaderBoard() {
                 value={overall.completed_fp}
                 precision={0}
                 valueStyle={{color: '#3f8600'}}
-                suffix={<> / {overall.total_fp}</>}
+                suffix={<> / {new Intl.NumberFormat('en-US').format(overall.total_fp)}</>}
               />
               <Progress size={100} percent={parseInt((overall.completed_fp / overall.total_fp) * 100)}
                         type='dashboard' strokeColor='#3f8600'/>
@@ -101,7 +101,7 @@ function LeaderBoard() {
                 value={overall.completed_liners}
                 precision={0}
                 valueStyle={{color: '#3f8600'}}
-                suffix={<> / {overall.total_liners}</>}
+                suffix={<> / {new Intl.NumberFormat('en-US').format(overall.total_liners)}</>}
               />
               <Progress size={100} percent={parseInt((overall.completed_liners / overall.total_liners) * 100)}
                         type='dashboard' strokeColor='#3f8600'/>
