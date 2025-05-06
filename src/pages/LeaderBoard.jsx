@@ -87,13 +87,13 @@ function LeaderBoard() {
           <Card variant="borderless">
             <Flex justify="space-between" align={'center'}>
               <Statistic
-                title="In-Progress Focal Person"
-                value={overall.in_progress_fp}
+                title="Focal Person In-Progress"
+                value={overall.in_progress_fp-overall.completed_fp}
                 precision={0}
                 valueStyle={{color: '#ff6a00'}}
-                suffix={<> / {new Intl.NumberFormat('en-US').format(overall.total_fp)}</>}
+                suffix={<> / {new Intl.NumberFormat('en-US').format(overall.total_fp-overall.completed_fp)}</>}
               />
-              <Progress size={100} percent={((overall.in_progress_fp / overall.total_fp) * 100).toPrecision(2)}
+              <Progress size={100} percent={((overall.in_progress_fp / (overall.total_fp-overall.completed_fp)) * 100).toPrecision(3)}
                         type='dashboard' strokeColor='#3f8600'/>
             </Flex>
           </Card>
@@ -102,13 +102,13 @@ function LeaderBoard() {
           <Card variant="borderless">
             <Flex justify="space-between" align={'center'}>
               <Statistic
-                title="Completed Focal Person"
+                title="Focal Person Completed"
                 value={overall.completed_fp}
                 precision={0}
                 valueStyle={{color: '#3f8600'}}
                 suffix={<> / {new Intl.NumberFormat('en-US').format(overall.total_fp)}</>}
               />
-              <Progress size={100} percent={((overall.completed_fp / overall.total_fp) * 100).toPrecision(2)}
+              <Progress size={100} percent={((overall.completed_fp / overall.total_fp) * 100).toPrecision(3)}
                         type='dashboard' strokeColor='#3f8600'/>
             </Flex>
           </Card>
@@ -117,13 +117,13 @@ function LeaderBoard() {
           <Card variant="borderless">
             <Flex justify="space-between" align={'center'}>
               <Statistic
-                title="Completed Liners"
+                title="Liners Completed"
                 value={overall.completed_liners}
                 precision={0}
                 valueStyle={{color: '#3f8600'}}
                 suffix={<> / {new Intl.NumberFormat('en-US').format(overall.total_liners)}</>}
               />
-              <Progress size={100} percent={((overall.completed_liners / overall.total_liners) * 100).toPrecision(2)}
+              <Progress size={100} percent={((overall.completed_liners / overall.total_liners) * 100).toPrecision(3)}
                         type='dashboard' strokeColor='#3f8600'/>
             </Flex>
           </Card>
@@ -134,7 +134,7 @@ function LeaderBoard() {
         rowKey='fp'
         dataSource={leaders}
         size="small"
-        scroll={{y: "calc(100vh - 300px)", x: "calc(100vh - 20px)"}}
+        scroll={{y: "calc(100vh - 300px)"}}
         pagination={{
           current: pagination.current,
           pageSize: pagination.pageSize,
@@ -150,26 +150,30 @@ function LeaderBoard() {
           {
             title: 'Focal Person',
             dataIndex: 'fp',
-            render: (d) => (<span style={{textTransform: 'capitalize'}}>{d}</span>)
+            width: '300px',
+            fixed: 'left',
+            render: (d) => (<span style={{textTransform: 'capitalize'}}><b>{d}</b></span>)
           }, {
             title: 'Barangay',
             dataIndex: 'barangay',
             align: 'left',
+            width: '80px',
+            fixed: 'left',
             render: (d) => (<span style={{textTransform: 'capitalize'}}>{d}</span>)
           },
           {
-            title: 'Members Total',
+            title: 'Liners Total',
             dataIndex: 'total',
-            align: 'right'
+            align: 'right',
           }, {
-            title: 'Members Received',
+            title: 'Liners Completed',
             dataIndex: 'status_1',
             align: 'right',
             sortOrder: 'descend',
           }, {
-            title: 'Members Remaining',
+            title: 'Liners Remaining',
             dataIndex: 'status_0',
-            align: 'right'
+            align: 'right',
           },
           {
             title: 'Progress',
@@ -184,11 +188,12 @@ function LeaderBoard() {
                   }}
                 >
                   <Progress
-                    percent={parseInt((record.status_1 / record.total) * 100)}
+                    percent={((record.status_1 / record.total) * 100).toPrecision(3)}
                     percentPosition={{align: 'center', type: 'inner'}}
-                    size={[200, 15]}
+                    size={['100%', 18]}
                     strokeColor="#24AC58"
                     trailColor="lightgray"
+                    format={(percent)=>(<span style={{fontWeight: 500}}>{percent}%</span>)}
                   />
                 </ConfigProvider>
               )
