@@ -11,9 +11,46 @@ function LeaderBoard() {
   const [multiplier, setMultiplier] = useState(0);
   const [leaders, setLeaders] = useState(null);
   const [overall, setOverall] = useState(false);
+  const [pagination, setPagination] = useState(
+    {current: 1, pageSize: 10, total: null, currentPage: 1}
+  );
+
+  const [loading, setLoading] = useState(false);
+
+  const fetchCount = async (page, pageSize) => {
+    setLoading(true);
+    const startIndex = (page - 1) * pageSize;
+    const endIndex = startIndex + pageSize - 1
+
+    const {data, error} = await supabase
+      .from('vubue8fiesa3_by_fp')
+      .select('*')
+      .range(startIndex, endIndex);
+
+    if (data) {
+      setPagination((prev) => ({...prev, total: overall.total_fp})); // Update total count
+      setLeaders(data);
+      setLoading(false);
+    }
+  };
+
+  const fetchOverall = async () => {
+    const {data, error} = await supabase
+      .from('vubue8fiesa3_status_by_fp')
+      .select('*')
+      .limit(100)
+    setOverall(data[0])
+  }
 
   useEffect(() => {
 
+    if(!overall?.total_fp && !pagination.total){
+      setPagination((prev) => ({...prev, total: overall.total_fp})); // Update total count
+    }
+
+  }, [overall]);
+
+  useEffect(() => {
     const getSeedAmount = async () => {
       const {data, error} = await supabase
         .from('tblX9A2B7GK')
@@ -27,28 +64,8 @@ function LeaderBoard() {
     if (!seedAmount || !multiplier) {
       getSeedAmount()
     }
-  }, []);
-
-  useEffect(() => {
-    const fetchCount = async () => {
-      const {data, error} = await supabase
-        .from('vubue8fiesa3_by_fp')
-        .select('*')
-        .limit(100)
-
-      if (data) setLeaders(data);
-    };
-
-    const fetchOverall = async () => {
-      const {data, error} = await supabase
-        .from('vubue8fiesa3_status_by_fp')
-        .select('*')
-        .limit(100)
-      setOverall(data[0])
-    }
 
     fetchOverall()
-    fetchCount(); // Initial count
 
     const subscription = supabase
       .channel("vubue8fiesa3_changes")
@@ -61,7 +78,12 @@ function LeaderBoard() {
     return () => {
       supabase.removeChannel(subscription); // Cleanup subscription
     };
+
   }, []);
+
+  useEffect(() => {
+    fetchCount(pagination.current, pagination.pageSize); // Initial count
+  }, [pagination.current, pagination.pageSize]);
 
   const twoColors = {
     '0%': '#108ee9',
@@ -76,9 +98,8 @@ function LeaderBoard() {
 
   return (
     <Layout style={{width: '100vw', height: '100vh', margin: 0, padding: 0}}>
-      <Row gutter={10} style={{margin: '20px 5px 10px 5px' }}>
+      <Row gutter={10} style={{margin: '20px 5px 10px 5px'}}>
         <Col span={12}>
-
           <Card variant="borderless">
             <Flex justify="space-between" align={'center'}>
               <Statistic
@@ -114,6 +135,16 @@ function LeaderBoard() {
         rowKey='fp'
         dataSource={leaders}
         size="small"
+        scroll={{ y: 800 }}
+        pagination={{
+          current: pagination.current,
+          pageSize: pagination.pageSize,
+          total: pagination.total, // Ensure total count is set
+          showSizeChanger: true,
+          pageSizeOptions: ["10", "20", "50", "100"],
+          onChange: (page, pageSize) => setPagination({current: page, pageSize}),
+        }}
+        loading={loading}
         columns={[
           {
             title: 'Focal Person',
