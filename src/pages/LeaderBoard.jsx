@@ -1,6 +1,6 @@
 // pages/DashboardPage.js
 import React, {useEffect, useState} from "react";
-import {Card, Col, ConfigProvider, Flex, Layout, Progress, Row, Statistic, Table, Typography} from "antd";
+import {Card, Col, ConfigProvider, Flex, Layout, Pagination, Progress, Row, Statistic, Table, Typography} from "antd";
 import bgVideo from '../assets/Tapelect-Bg.mp4'
 import supabase from "../supabase.js";
 
@@ -101,7 +101,7 @@ function LeaderBoard() {
                 valueStyle={{color: '#3f8600'}}
                 suffix={<> / {new Intl.NumberFormat('en-US').format(overall.total_fp)}</>}
               />
-              <Progress size={100} percent={parseInt((overall.completed_fp / overall.total_fp) * 100)}
+              <Progress size={100} percent={((overall.completed_fp / overall.total_fp) * 100).toPrecision(2)}
                         type='dashboard' strokeColor='#3f8600'/>
             </Flex>
           </Card>
@@ -116,7 +116,7 @@ function LeaderBoard() {
                 valueStyle={{color: '#3f8600'}}
                 suffix={<> / {new Intl.NumberFormat('en-US').format(overall.total_liners)}</>}
               />
-              <Progress size={100} percent={parseInt((overall.completed_liners / overall.total_liners) * 100)}
+              <Progress size={100} percent={((overall.completed_liners / overall.total_liners) * 100).toPrecision(2)}
                         type='dashboard' strokeColor='#3f8600'/>
             </Flex>
           </Card>
@@ -134,7 +134,10 @@ function LeaderBoard() {
           total: pagination.total, // Ensure total count is set
           showSizeChanger: true,
           pageSizeOptions: ["10", "20", "50", "100"],
-          onChange: (page, pageSize) => setPagination({current: page, pageSize}),
+          onChange: (page, pageSize) => {
+            setPagination({current: page, pageSize})
+            fetchCount();
+          },
         }}
         loading={loading}
         columns={[
@@ -187,6 +190,9 @@ function LeaderBoard() {
           },
 
         ]}
+        // footer={
+        //
+        // }
       ></Table>
 
     </Layout>
