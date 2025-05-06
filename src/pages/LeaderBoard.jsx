@@ -83,7 +83,22 @@ function LeaderBoard() {
   return (
     <Layout style={{width: '100vw', height: '100vh', margin: 0, padding: 0, overflowY: 'hidden'}}>
       <Row gutter={10} style={{margin: '20px 5px 10px 5px'}}>
-        <Col span={12}>
+        <Col span={8}>
+          <Card variant="borderless">
+            <Flex justify="space-between" align={'center'}>
+              <Statistic
+                title="In-Progress Focal Person"
+                value={overall.in_progress_fp}
+                precision={0}
+                valueStyle={{color: '#ff6a00'}}
+                suffix={<> / {new Intl.NumberFormat('en-US').format(overall.total_fp)}</>}
+              />
+              <Progress size={100} percent={((overall.in_progress_fp / overall.total_fp) * 100).toPrecision(2)}
+                        type='dashboard' strokeColor='#3f8600'/>
+            </Flex>
+          </Card>
+        </Col>
+        <Col span={8}>
           <Card variant="borderless">
             <Flex justify="space-between" align={'center'}>
               <Statistic
@@ -98,7 +113,7 @@ function LeaderBoard() {
             </Flex>
           </Card>
         </Col>
-        <Col span={12}>
+        <Col span={8}>
           <Card variant="borderless">
             <Flex justify="space-between" align={'center'}>
               <Statistic
