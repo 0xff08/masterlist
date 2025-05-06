@@ -62,7 +62,7 @@ function LeaderBoard() {
     const subscription = supabase
       .channel("vubue8fiesa3_changes")
       .on("postgres_changes", {event: "*", schema: "public", table: "vuBue8Fiesa3"}, () => {
-        fetchCount(); // Fetch new count on change
+        fetchCount(pagination.current, pagination.pageSize); // Fetch new count on change
         fetchOverall()
       })
       .subscribe();
