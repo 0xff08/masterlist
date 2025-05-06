@@ -17,20 +17,19 @@ function LeaderBoard() {
 
   const [loading, setLoading] = useState(false);
 
-  const fetchCount = async (page, pageSize) => {
+  const fetchData = async (page, pageSize) => {
     // setLoading(true);
     const startIndex = (page - 1) * pageSize;
     const endIndex = startIndex + pageSize - 1
 
     const {data, count, error} = await supabase
       .from('vubue8fiesa3_by_fp')
-      .select('*', { count: 'exact' })
+      .select('*', {count: 'exact'})
       .range(startIndex, endIndex);
 
-    if (data) {
-      setLeaders(data);
-      setPagination((prev) => ({...prev, total: count})); // Update total count
-      // setLoading(false);
+    return {
+      data: data,
+      total: count,
     }
   };
 
@@ -52,17 +51,26 @@ function LeaderBoard() {
       setMultiplier(data[0].multiplier)
     }
 
-    if (!seedAmount || !multiplier) {
-      getSeedAmount()
-    }
+    getSeedAmount()
 
     fetchOverall()
-    fetchCount(pagination.current, pagination.pageSize)
+  }, []);
+
+  useEffect(() => {
+    const loadData = async () => {
+      const {data, total} = await fetchData(pagination.current, pagination.pageSize)
+      if (data) {
+        setLeaders(data);
+        setPagination((prev) => ({...prev, total: total})); // Update total count
+      }
+    }
+
+    loadData()
 
     const subscription = supabase
       .channel("vubue8fiesa3_changes")
       .on("postgres_changes", {event: "*", schema: "public", table: "vuBue8Fiesa3"}, () => {
-        fetchCount(pagination.current, pagination.pageSize); // Fetch new count on change
+        loadData(); // Fetch new count on change
         fetchOverall()
       })
       .subscribe();
@@ -70,23 +78,7 @@ function LeaderBoard() {
     return () => {
       supabase.removeChannel(subscription); // Cleanup subscription
     };
-
-  }, []);
-
-  useEffect(() => {
-    fetchCount(pagination.current, pagination.pageSize); // Initial count
   }, [pagination.current, pagination.pageSize]);
-
-  const twoColors = {
-    '0%': '#108ee9',
-    '100%': '#87d068',
-  };
-
-  const conicColors = {
-    '0%': '#87d068',
-    '50%': '#ffe58f',
-    '100%': '#ffccc7',
-  };
 
   return (
     <Layout style={{width: '100vw', height: '100vh', margin: 0, padding: 0, overflowY: 'hidden'}}>
@@ -127,7 +119,7 @@ function LeaderBoard() {
         rowKey='fp'
         dataSource={leaders}
         size="small"
-        scroll={{ y: "calc(100vh - 220px)", x: "calc(100vh - 20px)"}}
+        scroll={{y: "calc(100vh - 300px)", x: "calc(100vh - 20px)"}}
         pagination={{
           current: pagination.current,
           pageSize: pagination.pageSize,
@@ -136,7 +128,6 @@ function LeaderBoard() {
           pageSizeOptions: ["10", "20", "50", "100"],
           onChange: (page, pageSize) => {
             setPagination({current: page, pageSize})
-            fetchCount();
           },
         }}
         loading={loading}
