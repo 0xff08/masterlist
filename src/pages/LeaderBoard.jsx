@@ -80,7 +80,7 @@ function LeaderBoard() {
     }
 
     getSeedAmount()
-    fetchOverall()
+    fetchOverall(searchBarangay)
   }, []);
 
   useEffect(() => {
@@ -96,6 +96,7 @@ function LeaderBoard() {
     }
 
     loadData(searchBarangay)
+    fetchOverall(searchBarangay)
 
     const subscription = supabase
       .channel("vubue8fiesa3_changes")
