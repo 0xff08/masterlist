@@ -1,11 +1,11 @@
 // pages/DashboardPage.js
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {
   Card,
   Col,
   ConfigProvider,
-  Flex,
-  Grid,
+  Flex, Form,
+  Grid, Input,
   Layout,
   Pagination,
   Progress,
@@ -16,6 +16,8 @@ import {
 } from "antd";
 import bgVideo from '../assets/Tapelect-Bg.mp4'
 import supabase from "../supabase.js";
+import {debounce} from "lodash";
+import * as sea from "node:sea";
 
 const {useBreakpoint} = Grid
 
@@ -29,29 +31,41 @@ function LeaderBoard() {
   const [pagination, setPagination] = useState({current: 1, pageSize: 10});
 
   const [loading, setLoading] = useState(false);
+  const [searchBarangay, setSearchBarangay] = useState("");
 
   const screens = useBreakpoint()
 
-  const fetchData = async (page, pageSize) => {
+  const fetchData = async (page, pageSize, searchBarangay) => {
     // setLoading(true);
     const startIndex = (page - 1) * pageSize;
     const endIndex = startIndex + pageSize - 1
 
-    const {data, count, error} = await supabase
+    const query = supabase
       .from('vubue8fiesa3_by_fp')
       .select('*', {count: 'exact'})
-      .range(startIndex, endIndex);
-
+      .range(startIndex, endIndex)
+    if (searchBarangay) {
+      query.ilike('barangay', `%${searchBarangay}%`)
+    }
+    const {data, count, error} = await query
     return {
       data: data, total: count,
     }
   };
 
-  const fetchOverall = async () => {
+  const fetchOverall = async (searchText) => {
+    if (searchText) {
+      const {data, error} = await supabase.rpc('get_barangay_status', {text_to_search: searchText})
+      console.log('overall', data)
+      if (data) setOverall(data)
+      return;
+    }
+
     const {data, error} = await supabase
       .from('vubue8fiesa3_status_by_fp')
       .select('*')
-      .limit(100)
+      .limit(10)
+
     setOverall(data[0])
   }
 
@@ -66,39 +80,57 @@ function LeaderBoard() {
     }
 
     getSeedAmount()
-
     fetchOverall()
   }, []);
 
   useEffect(() => {
-    const loadData = async () => {
-      const {data, total} = await fetchData(pagination.current, pagination.pageSize)
+    const loadData = async (searchBarangay) => {
+
+      const {data, total} = await fetchData(pagination.current, pagination.pageSize, searchBarangay)
+
+
       if (data) {
         setLeaders(data);
         setPagination((prev) => ({...prev, total: total})); // Update total count
       }
     }
 
-    loadData()
+    loadData(searchBarangay)
 
     const subscription = supabase
       .channel("vubue8fiesa3_changes")
       .on("postgres_changes", {event: "*", schema: "public", table: "vuBue8Fiesa3"}, () => {
-        loadData(); // Fetch new count on change
-        fetchOverall()
+        loadData(searchBarangay); // Fetch new count on change
+        fetchOverall(searchBarangay)
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(subscription); // Cleanup subscription
     };
-  }, [pagination.current, pagination.pageSize]);
+  }, [pagination.current, pagination.pageSize, searchBarangay]);
+
+  const debounceSearch = useCallback(
+    debounce((text) => {
+      setSearchBarangay(text);
+    }, 500))
 
   return (
     <Layout style={{
       width: '100vw', height: '100vh', margin: 0, padding: 0, overflowX: 'auto',
       minWidth: 350
     }}>
+      <Form
+        style={{margin: '10px 10px 0 10px'}}
+        onValuesChange={({barangay}) => {
+          debounceSearch(barangay)
+        }}
+        size={'large'}
+      >
+        <Form.Item name="barangay" noStyle>
+          <Input placeholder="BARANGAY"></Input>
+        </Form.Item>
+      </Form>
       <Row style={{marginTop: 10}}>
         <Col
           xxl={5} xl={8} lg={12} md={12} sm={12} xs={24}
@@ -126,9 +158,9 @@ function LeaderBoard() {
         <Col xxl={5} xl={8} lg={12} md={12} sm={12} xs={24}
              style={{padding: '5px 10px 5px 10px'}}
         >
-        {/*<Col xxl={8} xl={8} lg={8} md={12} sm={24} xs={24}*/}
-        {/*     style={{padding: '5px 10px 5px 10px'}}*/}
-        {/*>*/}
+          {/*<Col xxl={8} xl={8} lg={8} md={12} sm={24} xs={24}*/}
+          {/*     style={{padding: '5px 10px 5px 10px'}}*/}
+          {/*>*/}
           <Card variant="borderless">
             <Flex justify="space-between" align={'center'}>
               <Statistic
@@ -149,9 +181,9 @@ function LeaderBoard() {
         <Col xxl={4} xl={8} lg={12} md={12} sm={24} xs={24}
              style={{padding: '5px 10px 5px 10px'}}
         >
-        {/*<Col xxl={12} xl={8} lg={8} md={12} sm={24} xs={24}*/}
-        {/*     style={{padding: '5px 10px 5px 10px'}}*/}
-        {/*>*/}
+          {/*<Col xxl={12} xl={8} lg={8} md={12} sm={24} xs={24}*/}
+          {/*     style={{padding: '5px 10px 5px 10px'}}*/}
+          {/*>*/}
           <Card variant="borderless">
             <Flex justify="space-between" align={'center'}>
               <Statistic
@@ -171,9 +203,9 @@ function LeaderBoard() {
         <Col xxl={5} xl={12} lg={12} md={12} sm={24} xs={24}
              style={{padding: '5px 10px 5px 10px'}}
         >
-        {/*<Col xxl={8} xl={8} lg={8} md={24} sm={24} xs={24}*/}
-        {/*     style={{padding: '5px 10px 5px 10px'}}*/}
-        {/*>*/}
+          {/*<Col xxl={8} xl={8} lg={8} md={24} sm={24} xs={24}*/}
+          {/*     style={{padding: '5px 10px 5px 10px'}}*/}
+          {/*>*/}
           <Card variant="borderless">
             <Flex justify="space-between" align={'center'}>
               <Statistic
@@ -216,7 +248,7 @@ function LeaderBoard() {
         rowKey='fp'
         dataSource={leaders}
         size="small"
-        scroll={{y: `calc(100vh - ${screens.xs?'150':'300'}px)`, x: "calc(100vh - 200px)"}}
+        scroll={{y: `calc(100vh - ${screens.xs ? '150' : '300'}px)`, x: "calc(100vh - 200px)"}}
         pagination={{
           current: pagination.current, pageSize: pagination.pageSize, total: pagination.total, // Ensure total count is set
           showSizeChanger: true, pageSizeOptions: ["10", "20", "50", "100"], onChange: (page, pageSize) => {
