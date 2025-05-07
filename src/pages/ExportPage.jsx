@@ -2,16 +2,14 @@
 import React, {useCallback, useEffect, useState} from "react";
 import {
   Button,
-  Dropdown,
   Flex, Form,
   Grid, Input,
-  Layout, Select,
+  Layout, Progress, Select,
   Table,
 } from "antd";
-import bgVideo from '../assets/Tapelect-Bg.mp4'
+import {stringify} from 'csv-stringify/browser/esm/sync';
 import supabase from "../supabase.js";
 import {debounce} from "lodash";
-import * as sea from "node:sea";
 import {HeartFilled} from "@ant-design/icons";
 import dayjs from "dayjs";
 
@@ -23,7 +21,8 @@ function ExportPage() {
 
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState(null);
-
+  const [downloading, setDownloading] = useState(false);
+  const [progress, setProgress] = useState(0)
   const screens = useBreakpoint()
 
   const fetchData = async (page, pageSize, filter) => {
@@ -64,7 +63,7 @@ function ExportPage() {
 
   const debounceSearch = useCallback(
     debounce((values) => {
-      setFilter((prev)=>({...prev, ...values}));
+      setFilter((prev) => ({...prev, ...values}));
     }, 500))
 
   return (
@@ -81,41 +80,84 @@ function ExportPage() {
               debounceSearch(values)
             }}
             onFinish={async (filter) => {
+              let allData = [];
+              let start = 0;
+              const limit = 10000;
+
+              setDownloading(true);
+
               const query = supabase
                 .from('vuBue8Fiesa3')
-                .select('barangay, fp, liner, status, updated_at')
+                .select('*', {count: 'exact', head: true})
+
               if (filter?.barangay) {
                 query.ilike('barangay', `%${filter.barangay}%`)
               }
               if (filter?.status) {
                 query.eq('status', filter.status)
               }
-              const {data, error} = await query.csv()
-              if (!error) {
+
+              const {count, countError} = await query.csv()
+              if (countError) {
+                console.error('Error fetching row count:', countError);
+                return;
+              }
+
+              while (start < count) {
+                const query = supabase
+                  .from('vuBue8Fiesa3')
+                  .select('barangay,fp,liner,address,precinct_no,status,updated_at',)
+
+                if (filter?.barangay) {
+                  query.ilike('barangay', `%${filter.barangay}%`)
+                }
+                if (filter?.status) {
+                  query.eq('status', filter.status)
+                }
+                const {data, error} = await query.range(start, Math.min(start + limit - 1, count - 1));
+
+                if (error) {
+                  console.error('Error querying data:', error);
+                  return;
+                }
+
+                setProgress((((start + limit - 1) / count) * 100).toPrecision(3))
+
+                if (!data) {
+                  break
+                }
+                allData = [...allData, ...data];
+                start += limit;
+              }
+
+              if (allData) {
                 const now = dayjs().format('YYYYMMDDHHmmss')
                 let status = ''
-                if(filter.status==='1'){
+                if (filter.status === '1') {
                   status = '-claimed'
-                } else if(filter.status==='0'){
+                } else if (filter.status === '0') {
                   status = '-unclaimed'
                 }
-                let barangay='all'
-                if(filter.barangay){
-                  barangay = `-${liners[0].barangay}`
+                let barangay = 'all'
+                if (filter.barangay) {
+                  barangay = `${allData[0].barangay}`
                 }
                 const filename = `export-${barangay}${status}-${now}.csv`
-                const csvContent = "data:text/csv;charset=utf-8," + data;
-                const encodedUri = encodeURI(csvContent);
+                const csv = stringify(allData, {header: true});
+                const blob = new Blob([csv], {type: 'text/csv'});
                 const link = document.createElement("a");
-                link.setAttribute("href", encodedUri);
-                link.setAttribute("download", filename);
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
                 document.body.appendChild(link);
                 link.click();
+                document.body.removeChild(link);
               }
+
+              setDownloading(false)
             }}
             size={'large'}
           >
-            <Form.Item name="barangay">
+            <Form.Item name="barangay" required>
               <Input placeholder="SEARCH BARANGAY" allowClear></Input>
             </Form.Item>
             <Form.Item name="status">
@@ -129,8 +171,11 @@ function ExportPage() {
                 allowClear
               />
             </Form.Item>
-            <Form.Item >
-              <Button htmlType="submit">DOWNLOAD CSV</Button>
+            <Form.Item>
+              <Button htmlType="submit" disabled={downloading}><b>DOWNLOAD CSV</b></Button>
+            </Form.Item>
+            <Form.Item>
+              <Progress percent={progress} size={[300, 10]} strokeColor={['white', '#000000']} trailColor={'darkgray'}/>
             </Form.Item>
           </Form>
         </Flex>
@@ -174,7 +219,8 @@ function ExportPage() {
               sortOrder: 'descend',
               width: '150px',
               render: (d) => (
-                <span style={{textTransform: 'uppercase', fontWeight: 600, color: '#24AC58'}}>{d ? <HeartFilled/> : '-'}</span>)
+                <span style={{textTransform: 'uppercase', fontWeight: 600, color: '#24AC58'}}>{d ?
+                  <HeartFilled/> : '-'}</span>)
             }, /*{
               title: 'LINERS REMAINING',
               dataIndex: 'status_0',
