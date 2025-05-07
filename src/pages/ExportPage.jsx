@@ -13,6 +13,7 @@ import supabase from "../supabase.js";
 import {debounce} from "lodash";
 import * as sea from "node:sea";
 import {HeartFilled} from "@ant-design/icons";
+import dayjs from "dayjs";
 
 const {useBreakpoint} = Grid
 
@@ -91,14 +92,18 @@ function ExportPage() {
               }
               const {data, error} = await query.csv()
               if (!error) {
-                const currentDateTime = new Date().toISOString().replace(/[:.]/g, '-');
+                const now = dayjs().format('YYYYMMDDHHmmss')
                 let status = ''
                 if(filter.status==='1'){
                   status = '-claimed'
                 } else if(filter.status==='0'){
                   status = '-unclaimed'
                 }
-                const filename = `export-${liners[0].barangay}${status}-${currentDateTime}.csv`
+                let barangay='all'
+                if(filter.barangay){
+                  barangay = `-${liners[0].barangay}`
+                }
+                const filename = `export-${barangay}${status}-${now}.csv`
                 const csvContent = "data:text/csv;charset=utf-8," + data;
                 const encodedUri = encodeURI(csvContent);
                 const link = document.createElement("a");
@@ -111,7 +116,7 @@ function ExportPage() {
             size={'large'}
           >
             <Form.Item name="barangay">
-              <Input placeholder="SEARCH BARANGAY"></Input>
+              <Input placeholder="SEARCH BARANGAY" allowClear></Input>
             </Form.Item>
             <Form.Item name="status">
               <Select
