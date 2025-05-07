@@ -100,35 +100,35 @@ function LeaderBoard() {
       minWidth: 350
     }}>
       <Row style={{marginTop: 10}}>
-        {/*<Col*/}
-        {/*  xxl={5} xl={8} lg={12} md={12} sm={12} xs={24}*/}
-        {/*  style={{padding: '5px 10px 5px 10px'}}*/}
-        {/*>*/}
-        {/*  <Card variant="borderless">*/}
-        {/*    <Flex justify="space-between" align={'center'} style={{width: '100%'}}>*/}
-        {/*      <Statistic*/}
-        {/*        title={*/}
-        {/*          <span style={{fontWeight: 500}}>FOCAL PERSON<br/>REMAINING</span>*/}
-        {/*        }*/}
-        {/*        value={overall.total_fp - (overall.in_progress_fp + overall.completed_fp)}*/}
-        {/*        precision={0}*/}
-        {/*        valueStyle={{color: '#706e6e'}}*/}
-        {/*        suffix={<> / {new Intl.NumberFormat('en-US').format(overall.total_fp)}</>}*/}
-        {/*      />*/}
-        {/*      <Progress*/}
-        {/*        size={100}*/}
-        {/*        percent={(((overall.total_fp - (overall.in_progress_fp + overall.completed_fp)) / (overall.total_fp)) * 100).toPrecision(3)}*/}
-        {/*        type='dashboard'*/}
-        {/*        strokeColor='#706e6e'/>*/}
-        {/*    </Flex>*/}
-        {/*  </Card>*/}
-        {/*</Col>*/}
-        {/*<Col xxl={5} xl={8} lg={12} md={12} sm={12} xs={24}*/}
-        {/*     style={{padding: '5px 10px 5px 10px'}}*/}
-        {/*>*/}
-        <Col xxl={8} xl={8} lg={8} md={12} sm={24} xs={24}
+        <Col
+          xxl={5} xl={8} lg={12} md={12} sm={12} xs={24}
+          style={{padding: '5px 10px 5px 10px'}}
+        >
+          <Card variant="borderless">
+            <Flex justify="space-between" align={'center'} style={{width: '100%'}}>
+              <Statistic
+                title={
+                  <span style={{fontWeight: 500}}>FOCAL PERSON<br/>REMAINING</span>
+                }
+                value={overall.total_fp - (overall.in_progress_fp + overall.completed_fp)}
+                precision={0}
+                valueStyle={{color: '#706e6e'}}
+                suffix={<> / {new Intl.NumberFormat('en-US').format(overall.total_fp)}</>}
+              />
+              <Progress
+                size={100}
+                percent={(((overall.total_fp - (overall.in_progress_fp + overall.completed_fp)) / (overall.total_fp)) * 100).toPrecision(3)}
+                type='dashboard'
+                strokeColor='#706e6e'/>
+            </Flex>
+          </Card>
+        </Col>
+        <Col xxl={5} xl={8} lg={12} md={12} sm={12} xs={24}
              style={{padding: '5px 10px 5px 10px'}}
         >
+        {/*<Col xxl={8} xl={8} lg={8} md={12} sm={24} xs={24}*/}
+        {/*     style={{padding: '5px 10px 5px 10px'}}*/}
+        {/*>*/}
           <Card variant="borderless">
             <Flex justify="space-between" align={'center'}>
               <Statistic
@@ -146,12 +146,12 @@ function LeaderBoard() {
             </Flex>
           </Card>
         </Col>
-        {/*<Col xxl={4} xl={8} lg={12} md={12} sm={24} xs={24}*/}
-        {/*     style={{padding: '5px 10px 5px 10px'}}*/}
-        {/*>*/}
-        <Col xxl={12} xl={8} lg={8} md={12} sm={24} xs={24}
+        <Col xxl={4} xl={8} lg={12} md={12} sm={24} xs={24}
              style={{padding: '5px 10px 5px 10px'}}
         >
+        {/*<Col xxl={12} xl={8} lg={8} md={12} sm={24} xs={24}*/}
+        {/*     style={{padding: '5px 10px 5px 10px'}}*/}
+        {/*>*/}
           <Card variant="borderless">
             <Flex justify="space-between" align={'center'}>
               <Statistic
@@ -168,12 +168,12 @@ function LeaderBoard() {
             </Flex>
           </Card>
         </Col>
-        {/*<Col xxl={5} xl={12} lg={12} md={12} sm={24} xs={24}*/}
-        {/*     style={{padding: '5px 10px 5px 10px'}}*/}
-        {/*>*/}
-        <Col xxl={8} xl={8} lg={8} md={24} sm={24} xs={24}
+        <Col xxl={5} xl={12} lg={12} md={12} sm={24} xs={24}
              style={{padding: '5px 10px 5px 10px'}}
         >
+        {/*<Col xxl={8} xl={8} lg={8} md={24} sm={24} xs={24}*/}
+        {/*     style={{padding: '5px 10px 5px 10px'}}*/}
+        {/*>*/}
           <Card variant="borderless">
             <Flex justify="space-between" align={'center'}>
               <Statistic
@@ -190,26 +190,26 @@ function LeaderBoard() {
             </Flex>
           </Card>
         </Col>
-        {/*<Col xxl={5} xl={12} lg={24} md={24} sm={24} xs={24}*/}
-        {/*     style={{padding: '5px 10px 5px 10px'}}*/}
-        {/*>*/}
-        {/*  <Card variant="borderless">*/}
-        {/*    <Flex justify="space-between" align={'center'}>*/}
-        {/*      <Statistic*/}
-        {/*        title={*/}
-        {/*          <span style={{fontWeight: 500}}>LINERS<br/>REMAINING</span>*/}
-        {/*        }*/}
-        {/*        value={overall.total_liners - overall.completed_liners}*/}
-        {/*        precision={0}*/}
-        {/*        valueStyle={{color: '#646563'}}*/}
-        {/*        suffix={<> / {new Intl.NumberFormat('en-US').format(overall.total_liners)}</>}*/}
-        {/*      />*/}
-        {/*      <Progress size={100}*/}
-        {/*                percent={(((overall.total_liners - overall.completed_liners) / overall.total_liners) * 100).toPrecision(3)}*/}
-        {/*                type='dashboard' strokeColor='#646563'/>*/}
-        {/*    </Flex>*/}
-        {/*  </Card>*/}
-        {/*</Col>*/}
+        <Col xxl={5} xl={12} lg={24} md={24} sm={24} xs={24}
+             style={{padding: '5px 10px 5px 10px'}}
+        >
+          <Card variant="borderless">
+            <Flex justify="space-between" align={'center'}>
+              <Statistic
+                title={
+                  <span style={{fontWeight: 500}}>LINERS<br/>REMAINING</span>
+                }
+                value={overall.total_liners - overall.completed_liners}
+                precision={0}
+                valueStyle={{color: '#646563'}}
+                suffix={<> / {new Intl.NumberFormat('en-US').format(overall.total_liners)}</>}
+              />
+              <Progress size={100}
+                        percent={(((overall.total_liners - overall.completed_liners) / overall.total_liners) * 100).toPrecision(3)}
+                        type='dashboard' strokeColor='#646563'/>
+            </Flex>
+          </Card>
+        </Col>
       </Row>
       <Table
         style={{padding: 10, minWidth: 200}}
