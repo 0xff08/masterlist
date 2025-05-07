@@ -276,16 +276,13 @@ function LeaderBoard() {
           <Col xxl={5} xl={8} lg={12} md={12} sm={12} xs={24}
                style={{padding: '5px 10px 5px 10px'}}
           >
-            {/*<Col xxl={8} xl={8} lg={8} md={12} sm={24} xs={24}*/}
-            {/*     style={{padding: '5px 10px 5px 10px'}}*/}
-            {/*>*/}
             <Card variant="borderless">
               <Flex justify="space-between" align={'center'}>
                 <Statistic
                   title={
                     <span style={{fontWeight: 500}}>FOCAL PERSON<br/>IN-PROGRESS</span>
                   }
-                  value={barangayStatus.in_progress_fp - barangayStatus.completed_fp}
+                  value={barangayStatus.in_progress_fp}
                   precision={0}
                   valueStyle={{color: '#ff6a00'}}
                   suffix={<> / {new Intl.NumberFormat('en-US').format(barangayStatus.total_fp - barangayStatus.completed_fp)}</>}
@@ -299,9 +296,6 @@ function LeaderBoard() {
           <Col xxl={4} xl={8} lg={12} md={12} sm={24} xs={24}
                style={{padding: '5px 10px 5px 10px'}}
           >
-            {/*<Col xxl={12} xl={8} lg={8} md={12} sm={24} xs={24}*/}
-            {/*     style={{padding: '5px 10px 5px 10px'}}*/}
-            {/*>*/}
             <Card variant="borderless">
               <Flex justify="space-between" align={'center'}>
                 <Statistic
@@ -322,9 +316,6 @@ function LeaderBoard() {
           <Col xxl={5} xl={12} lg={12} md={12} sm={24} xs={24}
                style={{padding: '5px 10px 5px 10px'}}
           >
-            {/*<Col xxl={8} xl={8} lg={8} md={24} sm={24} xs={24}*/}
-            {/*     style={{padding: '5px 10px 5px 10px'}}*/}
-            {/*>*/}
             <Card variant="borderless">
               <Flex justify="space-between" align={'center'}>
                 <Statistic
