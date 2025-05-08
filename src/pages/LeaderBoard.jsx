@@ -105,7 +105,7 @@ function LeaderBoard() {
   useEffect(() => {
     const interval = setInterval(() => {
       setLeaders((prevData) =>
-        prevData.map((row) => ({ ...row, updated_since: dayjs().utc() }))
+        prevData?.map((row) => ({ ...row, updated_since: dayjs().utc() }))
       );
     }, 1000);
 
