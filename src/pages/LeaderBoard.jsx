@@ -26,7 +26,7 @@ const {useBreakpoint} = Grid
 function useThrottledRequest(callback, delay = 2000) {
   const [lastRequestTime, setLastRequestTime] = useState(0);
 
-  const makeRequest = (...args) => {
+  const makeRequest = (args) => {
     const now = Date.now();
     if (now - lastRequestTime >= delay) {
       setLastRequestTime(now);
@@ -70,7 +70,6 @@ function LeaderBoard() {
     if (searchText) {
       const {data, error} = await supabase.rpc('get_barangay_status', {text_to_search: searchText})
       if (data) setBarangayStatus(data)
-      return;
     }
 
     const {data, error} = await supabase
@@ -99,7 +98,6 @@ function LeaderBoard() {
   const fetchOverallData = (searchText) => {
     loadData(searchText)
     fetchOverall(searchText)
-    fetchOverall()
   }
 
   useEffect(() => {
