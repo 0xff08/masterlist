@@ -44,3 +44,11 @@
   text-transform: uppercase;
   font-weight: bold;
 }
+
+.even-row {
+  background-color: #f5f5f5;
+}
+
+.odd-row {
+  background-color: #ffffff;
+}

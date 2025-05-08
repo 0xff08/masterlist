@@ -7,17 +7,19 @@ import {
   Flex, Form,
   Grid, Input,
   Layout,
-  Pagination,
   Progress,
   Row,
   Statistic,
   Table,
-  Typography
 } from "antd";
-import bgVideo from '../assets/Tapelect-Bg.mp4'
 import supabase from "../supabase.js";
 import {debounce} from "lodash";
-import * as sea from "node:sea";
+import dayjs from "dayjs";
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const {useBreakpoint} = Grid
 
@@ -99,6 +101,16 @@ function LeaderBoard() {
     fetchOverall(searchText)
     fetchOverall()
   }
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLeaders((prevData) =>
+        prevData.map((row) => ({ ...row, updated_since: dayjs().utc() }))
+      );
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [leaders]);
 
   const throttledFetch = useThrottledRequest(fetchOverallData)
 
@@ -367,7 +379,7 @@ function LeaderBoard() {
           rowKey='fp'
           dataSource={leaders}
           size="small"
-          scroll={{y: `calc(100vh - ${screens.xs ? '150' : '300'}px)`, x: "calc(100vh - 200px)"}}
+          scroll={{y: `calc(100vh - ${screens.xs ? '150' : '400'}px)`, x: "calc(100vh - 200px)"}}
           pagination={{
             current: pagination.current, pageSize: pagination.pageSize, total: pagination.total, // Ensure total count is set
             showSizeChanger: true, pageSizeOptions: ["10", "20", "50", "100"], onChange: (page, pageSize) => {
@@ -375,50 +387,68 @@ function LeaderBoard() {
             },
           }}
           loading={loading}
-          columns={[
-            {
-              title: 'FOCAL PERSON',
-              dataIndex: 'fp',
-              width: 300,
-              render: (d) => (<span style={{textTransform: 'uppercase'}}><b>{d}</b></span>)
-            }, {
-              title: 'BARANGAY',
-              dataIndex: 'barangay',
-              align: 'left',
-              width: '150px',
-              render: (d) => (<span style={{textTransform: 'uppercase'}}>{d}</span>)
-            }, {
-              title: 'LINERS TOTAL', dataIndex: 'total', align: 'right',
-              width: '150px',
-            }, {
-              title: 'LINERS COMPLETED', dataIndex: 'status_1', align: 'right', sortOrder: 'descend',
-              width: '150px',
-            }, {
-              title: 'LINERS REMAINING', dataIndex: 'status_0', align: 'right',
-              width: '150px',
-            }, {
-              title: 'PROGRESS',
-              fixed: 'right',
-              width: screens.xs ? 100 : 200,
-              render: (_, record) => {
-                return (<ConfigProvider
-                  theme={{
-                    token: {
-                      colorText: 'white', fontSize: 12
-                    }
-                  }}
-                >
-                  <Progress
-                    percent={((record.status_1 / record.total) * 100).toPrecision(3)}
-                    percentPosition={{align: 'center', type: 'inner'}}
-                    size={['100%', 18]}
-                    strokeColor="#24AC58"
-                    trailColor="lightgray"
-                    format={(percent) => (<span style={{fontWeight: 500}}>{percent}%</span>)}
-                  />
-                </ConfigProvider>)
-              }
-            },
+          rowClassName={(record, index) =>
+            index % 2 === 0 ? "even-row" : "odd-row"
+          }
+          columns={[{
+            title: 'UPDATED AT',
+            dataIndex: 'updated_at',
+            align: 'right',
+            width: '150px',
+            render: (d, {updated_since}) => {
+              const start = dayjs.utc(d)
+              const end = updated_since || dayjs().utc()
+              const elapsedSeconds = end.diff(start, 'seconds');
+              const days = Math.floor((elapsedSeconds / 3600)/24);
+              const hours = Math.floor((elapsedSeconds / 3600)%24);
+              const minutes = Math.floor((elapsedSeconds % 3600) / 60);
+              const seconds = elapsedSeconds % 60;
+              return (<span style={{fontWeight: 600}}>
+                {days ? `${days}d`: ''} {hours ? `${hours}h`: ''} {minutes ? `${minutes}m` : ''} {seconds ? `${seconds}s` : '0s'} ago</span>)
+            }
+          }, {
+            title: 'BARANGAY',
+            dataIndex: 'barangay',
+            align: 'left',
+            width: '150px',
+            render: (d) => (<span style={{textTransform: 'uppercase', fontWeight: 700}}>{d}</span>)
+          }, {
+            title: 'FOCAL PERSON',
+            dataIndex: 'fp',
+            width: 300,
+            render: (d) => (<span style={{textTransform: 'uppercase', fontWeight: 600}}>{d}</span>)
+          }, {
+            title: 'LINERS TOTAL', dataIndex: 'total', align: 'right',
+            width: '150px',
+          }, {
+            title: 'LINERS COMPLETED', dataIndex: 'status_1', align: 'right', sortOrder: 'descend',
+            width: '150px',
+          }, {
+            title: 'LINERS REMAINING', dataIndex: 'status_0', align: 'right',
+            width: '150px',
+          }, {
+            title: 'PROGRESS',
+            fixed: 'right',
+            width: screens.xs ? 100 : 200,
+            render: (_, record) => {
+              return (<ConfigProvider
+                theme={{
+                  token: {
+                    colorText: 'white', fontSize: 12
+                  }
+                }}
+              >
+                <Progress
+                  percent={((record.status_1 / record.total) * 100).toPrecision(3)}
+                  percentPosition={{align: 'center', type: 'inner'}}
+                  size={['100%', 18]}
+                  strokeColor="#24AC58"
+                  trailColor="lightgray"
+                  format={(percent) => (<span style={{fontWeight: 500}}>{percent}%</span>)}
+                />
+              </ConfigProvider>)
+            }
+          },
 
           ]}
           // footer={

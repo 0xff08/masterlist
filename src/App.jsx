@@ -11,7 +11,7 @@ import LogoutPage from "./pages/LogoutPage.jsx";
 import {AuthProvider} from "./AuthProvider.jsx";
 import LeaderBoard from "./pages/LeaderBoard.jsx";
 import ExportPage from "./pages/ExportPage.jsx";
-// import Debug from "./pages/Debug.jsx";
+import Debug from "./pages/Debug.jsx";
 
 function App() {
 
@@ -33,7 +33,7 @@ function App() {
             <Route exact path="/export" element={<PrivateRoute><ExportPage/></PrivateRoute>}/>
             <Route exact path="/search" element={<PrivateRoute><SearchPage/></PrivateRoute>}/>
             <Route exact path="/logout" element={<PrivateRoute><LogoutPage/></PrivateRoute>}/>
-            {/*<Route exact path="/debug" element={<PrivateRoute><Debug/></PrivateRoute>}/>*/}
+            <Route exact path="/debug" element={<PrivateRoute><Debug/></PrivateRoute>}/>
           </Routes>
         </Router>
       </AuthProvider>
