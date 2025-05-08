@@ -21,11 +21,21 @@ import * as sea from "node:sea";
 
 const {useBreakpoint} = Grid
 
-function LeaderBoard() {
+function useThrottledRequest(callback, delay = 2000) {
+  const [lastRequestTime, setLastRequestTime] = useState(0);
 
-  const [count, setCount] = useState(0);
-  const [seedAmount, setSeedAmount] = useState(0);
-  const [multiplier, setMultiplier] = useState(0);
+  const makeRequest = (...args) => {
+    const now = Date.now();
+    if (now - lastRequestTime >= delay) {
+      setLastRequestTime(now);
+      callback(args); // Execute the request
+    }
+  };
+
+  return makeRequest;
+}
+
+function LeaderBoard() {
   const [leaders, setLeaders] = useState(null);
   const [overall, setOverall] = useState({});
   const [pagination, setPagination] = useState({current: 1, pageSize: 10});
@@ -33,6 +43,7 @@ function LeaderBoard() {
   const [loading, setLoading] = useState(false);
   const [searchBarangay, setSearchBarangay] = useState("");
   const [barangayStatus, setBarangayStatus] = useState(false);
+
   const screens = useBreakpoint()
 
   const fetchData = async (page, pageSize, searchBarangay) => {
@@ -56,7 +67,6 @@ function LeaderBoard() {
   const fetchOverall = async (searchText) => {
     if (searchText) {
       const {data, error} = await supabase.rpc('get_barangay_status', {text_to_search: searchText})
-      console.log('overall', data)
       if (data) setBarangayStatus(data)
       return;
     }
@@ -70,38 +80,36 @@ function LeaderBoard() {
   }
 
   useEffect(() => {
-    const getSeedAmount = async () => {
-      const {data, error} = await supabase
-        .from('tblX9A2B7GK')
-        .select('*')
-        .limit(1)
-      setSeedAmount(data[0].seed)
-      setMultiplier(data[0].multiplier)
-    }
-
-    getSeedAmount()
     fetchOverall(searchBarangay)
   }, []);
 
-  useEffect(() => {
-    const loadData = async (searchBarangay) => {
 
-      const {data, total} = await fetchData(pagination.current, pagination.pageSize, searchBarangay)
+  const loadData = async (searchBarangay) => {
 
-      if (data) {
-        setLeaders(data);
-        setPagination((prev) => ({...prev, total: total})); // Update total count
-      }
+    const {data, total} = await fetchData(pagination.current, pagination.pageSize, searchBarangay)
+
+    if (data) {
+      setLeaders(data);
+      setPagination((prev) => ({...prev, total: total})); // Update total count
     }
+  }
 
-    loadData(searchBarangay)
-    fetchOverall(searchBarangay)
+  const fetchOverallData = (searchText) => {
+    loadData(searchText)
+    fetchOverall(searchText)
+    fetchOverall()
+  }
+
+  const throttledFetch = useThrottledRequest(fetchOverallData)
+
+  useEffect(() => {
+
+    throttledFetch(searchBarangay)
 
     const subscription = supabase
       .channel("vubue8fiesa3_changes")
       .on("postgres_changes", {event: "*", schema: "public", table: "vuBue8Fiesa3"}, () => {
-        loadData(searchBarangay); // Fetch new count on change
-        fetchOverall(searchBarangay)
+        throttledFetch(searchBarangay)
       })
       .subscribe();
 
@@ -381,10 +389,10 @@ function LeaderBoard() {
               render: (d) => (<span style={{textTransform: 'uppercase'}}>{d}</span>)
             }, {
               title: 'LINERS TOTAL', dataIndex: 'total', align: 'right',
-            width: '150px',
+              width: '150px',
             }, {
               title: 'LINERS COMPLETED', dataIndex: 'status_1', align: 'right', sortOrder: 'descend',
-            width: '150px',
+              width: '150px',
             }, {
               title: 'LINERS REMAINING', dataIndex: 'status_0', align: 'right',
               width: '150px',
