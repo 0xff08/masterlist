@@ -10,7 +10,7 @@ import {
   Progress,
   Row, Select, Space,
   Statistic,
-  Table,
+  Table, Typography,
 } from "antd";
 import supabase from "../supabase.js";
 import {debounce} from "lodash";
@@ -46,6 +46,7 @@ function LeaderBoard() {
   const [groupBy, setGroupBy] = useState('fp');
   const [barangayStatus, setBarangayStatus] = useState(false);
   const [now, setNow] = useState(dayjs().utc());
+  const [filter, setFilter] = useState({barangay: '', groupBy: 'fp'});
 
   const screens = useBreakpoint()
 
@@ -73,7 +74,10 @@ function LeaderBoard() {
     if (searchBarangay) {
       query.ilike('barangay', `%${searchBarangay}%`)
     }
+
+    // console.log({searchBarangay, groupBy})
     const {data, count, error} = await query.range(startIndex, endIndex)
+
     return {
       data: data, total: count,
     }
@@ -107,7 +111,9 @@ function LeaderBoard() {
   }
 
   const fetchOverallData = (searchText, groupBy) => {
-    loadData(searchText, groupBy)
+    loadData(searchText, groupBy).then(() => {
+      setLoading(false);
+    })
     fetchOverall(searchText, groupBy)
   }
 
@@ -115,25 +121,28 @@ function LeaderBoard() {
 
   useEffect(() => {
 
-    throttledFetch(searchBarangay, groupBy)
+    throttledFetch(filter.barangay, filter.groupBy)
 
     const subscription = supabase
       .channel("vubue8fiesa3_changes")
       .on("postgres_changes", {event: "*", schema: "public", table: "vuBue8Fiesa3"}, () => {
-        throttledFetch(searchBarangay, groupBy)
+        throttledFetch(filter.barangay, filter.groupBy)
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(subscription); // Cleanup subscription
     };
-  }, [pagination.current, pagination.pageSize, searchBarangay, groupBy]);
+  }, [pagination.current, pagination.pageSize, filter]);
 
   const debounceSearch = useCallback(
-    debounce((text, groupBy) => {
-      setSearchBarangay(text);
-      setGroupBy(prev => groupBy || prev);
-    }, 500))
+    debounce((barangay, groupBy) => {
+      setFilter({
+        barangay,
+        groupBy
+      })
+      setLoading(true)
+    }, 1000))
 
   const getColumns = () => {
     let cols = [{
@@ -144,7 +153,8 @@ function LeaderBoard() {
       render: (d) => {
         const start = dayjs.utc(d)
         const end = now
-        const elapsedSeconds = end.diff(start, 'seconds');
+        let elapsedSeconds = end.diff(start, 'seconds');
+        elapsedSeconds = elapsedSeconds < 0 ? 1 : elapsedSeconds;
         const days = Math.floor((elapsedSeconds / 3600) / 24);
         const hours = Math.floor((elapsedSeconds / 3600) % 24);
         const minutes = Math.floor((elapsedSeconds % 3600) / 60);
@@ -196,7 +206,7 @@ function LeaderBoard() {
       }
     },]
 
-    return cols.filter(col => groupBy !== 'fp' ? col.dataIndex !== 'fp' : true)
+    return cols.filter(col => filter.groupBy !== 'fp' ? col.dataIndex !== 'fp' : true)
   }
 
   return (
@@ -326,7 +336,8 @@ function LeaderBoard() {
           style={{
             margin: '20px 10px 10px 10px'
           }}
-          onValuesChange={({barangay, groupBy}) => {
+          onValuesChange={(_, {barangay, groupBy}) => {
+            console.log({barangay, groupBy});
             debounceSearch(barangay, groupBy)
           }}
           size={'large'}
@@ -334,7 +345,7 @@ function LeaderBoard() {
           <Row justify='space-between'>
             <Col>
               <Form.Item name="barangay" noStyle>
-                <Input placeholder="SEARCH BARANGAY"></Input>
+                <Input placeholder="SEARCH BARANGAY" allowClear></Input>
               </Form.Item>
             </Col>
             <Col>
