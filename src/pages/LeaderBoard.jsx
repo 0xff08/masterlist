@@ -337,7 +337,7 @@ function LeaderBoard() {
             margin: '20px 10px 10px 10px'
           }}
           onValuesChange={(_, {barangay, groupBy}) => {
-            console.log({barangay, groupBy});
+            // console.log({barangay, groupBy});
             debounceSearch(barangay, groupBy)
           }}
           size={'large'}

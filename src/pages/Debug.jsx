@@ -2,6 +2,23 @@ import {Button, Col, Form, Input, Layout, Row} from "antd";
 import supabase from "../supabase.js";
 
 function Debug() {
+
+
+  async function createUser(email, password) {
+// console.log({email, password});
+    const { data, error } = await supabase.auth.signUp({
+      email: email,
+      password: password
+    })
+
+    // if (error) {
+    //   console.error('Error creating user:', error.message);
+    // } else {
+    //   console.log('User created:', data);
+    // }
+  }
+
+
   return (
     <Layout style={{
       width: '100vw',
@@ -15,16 +32,12 @@ function Debug() {
           }}
           layout={'horizontal'}
           onFinish={({users})=>{
-            // // console.log(users);
-            users.trim().split('\n').map(async(line) => {
+            const usersList = users.trim().split('\n').map((line) => {
               const [email, password] = line.split('\t')
-
-              const { data, error } = await supabase.auth.signUp({
-                email: email.trim(),
-                password: password.trim()
-              })
-
-              // console.log({data, error})
+              return {email: email.trim(), password: password.trim()};
+            })
+            usersList.forEach(async (user) => {
+              await createUser(user.email, user.password);
             })
           }}
         >
