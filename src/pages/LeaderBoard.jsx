@@ -8,7 +8,7 @@ import {
   Grid, Input,
   Layout,
   Progress,
-  Row,
+  Row, Select, Space,
   Statistic,
   Table,
 } from "antd";
@@ -26,11 +26,11 @@ const {useBreakpoint} = Grid
 function useThrottledRequest(callback, delay = 2000) {
   const [lastRequestTime, setLastRequestTime] = useState(0);
 
-  const makeRequest = (args) => {
+  const makeRequest = (...args) => {
     const now = Date.now();
     if (now - lastRequestTime >= delay) {
       setLastRequestTime(now);
-      callback(args); // Execute the request
+      callback(...args); // Execute the request
     }
   };
 
@@ -38,37 +38,52 @@ function useThrottledRequest(callback, delay = 2000) {
 }
 
 function LeaderBoard() {
-  const [leaders, setLeaders] = useState(null);
+  const [leaders, setLeaders] = useState([]);
   const [overall, setOverall] = useState({});
   const [pagination, setPagination] = useState({current: 1, pageSize: 10});
-
   const [loading, setLoading] = useState(false);
   const [searchBarangay, setSearchBarangay] = useState("");
+  const [groupBy, setGroupBy] = useState('fp');
   const [barangayStatus, setBarangayStatus] = useState(false);
+  const [now, setNow] = useState(dayjs().utc());
 
   const screens = useBreakpoint()
 
-  const fetchData = async (page, pageSize, searchBarangay) => {
+  useEffect(() => {
+    fetchOverall(searchBarangay)
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(dayjs().utc())
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [leaders]);
+
+  const fetchData = async (page, pageSize, searchBarangay, groupBy = 'fp') => {
     // setLoading(true);
     const startIndex = (page - 1) * pageSize;
     const endIndex = startIndex + pageSize - 1
 
     const query = supabase
-      .from('vubue8fiesa3_by_fp')
+      .from(`vubue8fiesa3_by_${groupBy}`)
       .select('*', {count: 'exact'})
-      .range(startIndex, endIndex)
+
     if (searchBarangay) {
       query.ilike('barangay', `%${searchBarangay}%`)
     }
-    const {data, count, error} = await query
+    const {data, count, error} = await query.range(startIndex, endIndex)
     return {
       data: data, total: count,
     }
   };
 
-  const fetchOverall = async (searchText) => {
+  const fetchOverall = async (searchText, groupBy) => {
     if (searchText) {
-      const {data, error} = await supabase.rpc('get_barangay_status', {text_to_search: searchText})
+      const {data, error} = await supabase.rpc('get_barangay_status', {
+        text_to_search: searchText
+      })
       if (data) setBarangayStatus(data)
     }
 
@@ -80,14 +95,10 @@ function LeaderBoard() {
     setOverall(data[0])
   }
 
-  useEffect(() => {
-    fetchOverall(searchBarangay)
-  }, []);
+  const loadData = async (searchBarangay, groupBy) => {
 
-
-  const loadData = async (searchBarangay) => {
-
-    const {data, total} = await fetchData(pagination.current, pagination.pageSize, searchBarangay)
+    const {data, total} =
+      await fetchData(pagination.current, pagination.pageSize, searchBarangay, groupBy)
 
     if (data) {
       setLeaders(data);
@@ -95,43 +106,98 @@ function LeaderBoard() {
     }
   }
 
-  const fetchOverallData = (searchText) => {
-    loadData(searchText)
-    fetchOverall(searchText)
+  const fetchOverallData = (searchText, groupBy) => {
+    loadData(searchText, groupBy)
+    fetchOverall(searchText, groupBy)
   }
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setLeaders((prevData) =>
-        prevData?.map((row) => ({ ...row, updated_since: dayjs().utc() }))
-      );
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [leaders]);
 
   const throttledFetch = useThrottledRequest(fetchOverallData)
 
   useEffect(() => {
 
-    throttledFetch(searchBarangay)
+    throttledFetch(searchBarangay, groupBy)
 
     const subscription = supabase
       .channel("vubue8fiesa3_changes")
       .on("postgres_changes", {event: "*", schema: "public", table: "vuBue8Fiesa3"}, () => {
-        throttledFetch(searchBarangay)
+        throttledFetch(searchBarangay, groupBy)
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(subscription); // Cleanup subscription
     };
-  }, [pagination.current, pagination.pageSize, searchBarangay]);
+  }, [pagination.current, pagination.pageSize, searchBarangay, groupBy]);
 
   const debounceSearch = useCallback(
-    debounce((text) => {
+    debounce((text, groupBy) => {
       setSearchBarangay(text);
+      setGroupBy(prev => groupBy || prev);
     }, 500))
+
+  const getColumns = () => {
+    let cols = [{
+      title: 'UPDATED AT',
+      dataIndex: 'updated_at',
+      align: 'right',
+      width: '150px',
+      render: (d) => {
+        const start = dayjs.utc(d)
+        const end = now
+        const elapsedSeconds = end.diff(start, 'seconds');
+        const days = Math.floor((elapsedSeconds / 3600) / 24);
+        const hours = Math.floor((elapsedSeconds / 3600) % 24);
+        const minutes = Math.floor((elapsedSeconds % 3600) / 60);
+        const seconds = (elapsedSeconds % 60);
+        return (<span style={{fontWeight: 600}}>
+                {days ? `${days}d` : ''} {hours ? `${hours}h` : ''} {minutes ? `${minutes}m` : ''} {seconds ? `${seconds}s` : '0s'} ago</span>)
+      }
+    }, {
+      title: 'BARANGAY',
+      dataIndex: 'barangay',
+      align: 'left',
+      width: '150px',
+      render: (d) => (<span style={{textTransform: 'uppercase', fontWeight: 700}}>{d}</span>)
+    }, {
+      title: 'FOCAL PERSON',
+      dataIndex: 'fp',
+      width: 300,
+      render: (d) => (<span style={{textTransform: 'uppercase', fontWeight: 600}}>{d}</span>)
+    }, {
+      title: 'LINERS TOTAL', dataIndex: 'total', align: 'right',
+      width: '150px',
+    }, {
+      title: 'LINERS COMPLETED', dataIndex: 'status_1', align: 'right', sortOrder: 'descend',
+      width: '150px',
+    }, {
+      title: 'LINERS REMAINING', dataIndex: 'status_0', align: 'right',
+      width: '150px',
+    }, {
+      title: 'PROGRESS',
+      fixed: 'right',
+      width: screens.xs ? 100 : 200,
+      render: (_, record) => {
+        return (<ConfigProvider
+          theme={{
+            token: {
+              colorText: 'white', fontSize: 12
+            }
+          }}
+        >
+          <Progress
+            percent={((record.status_1 / record.total) * 100).toPrecision(3)}
+            percentPosition={{align: 'center', type: 'inner'}}
+            size={['100%', 18]}
+            strokeColor="#24AC58"
+            trailColor="lightgray"
+            format={(percent) => (<span style={{fontWeight: 500}}>{percent}%</span>)}
+          />
+        </ConfigProvider>)
+      }
+    },]
+
+    return cols.filter(col => groupBy !== 'fp' ? col.dataIndex !== 'fp' : true)
+  }
 
   return (
     <Layout style={{
@@ -257,15 +323,38 @@ function LeaderBoard() {
       </Flex>
       <Flex className="background-color" style={{marginTop: 20}} vertical>
         <Form
-          style={{margin: '20px 0 10px 10px', width: 315}}
-          onValuesChange={({barangay}) => {
-            debounceSearch(barangay)
+          style={{
+            margin: '20px 10px 10px 10px'
+          }}
+          onValuesChange={({barangay, groupBy}) => {
+            debounceSearch(barangay, groupBy)
           }}
           size={'large'}
         >
-          <Form.Item name="barangay" noStyle>
-            <Input placeholder="SEARCH BARANGAY"></Input>
-          </Form.Item>
+          <Row justify='space-between'>
+            <Col>
+              <Form.Item name="barangay" noStyle>
+                <Input placeholder="SEARCH BARANGAY"></Input>
+              </Form.Item>
+            </Col>
+            <Col>
+              <Form.Item name='groupBy' noStyle initialValue='fp'>
+                <Select
+                  style={{
+                    width: '200px'
+                  }}
+                  placeholder="GROUP BY"
+                  options={[
+                    {
+                      label: 'FOCAL PERSON', value: 'fp',
+                    }, {
+                      label: 'BARANGAY', value: 'barangay',
+                    },
+                  ]}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
         </Form>
         {searchBarangay && <Row style={{marginTop: 10}}>
           <Col
@@ -374,8 +463,8 @@ function LeaderBoard() {
         </Row>}
         <Table
           style={{padding: 10, minWidth: 200}}
-          rowKey='fp'
-          dataSource={leaders}
+          rowKey="key"
+          dataSource={leaders.map((d, index) => ({...d, key: `leaders-${index}`}))}
           size="small"
           scroll={{y: `calc(100vh - ${screens.xs ? '150' : '400'}px)`, x: "calc(100vh - 200px)"}}
           pagination={{
@@ -388,70 +477,7 @@ function LeaderBoard() {
           rowClassName={(record, index) =>
             index % 2 === 0 ? "even-row" : "odd-row"
           }
-          columns={[{
-            title: 'UPDATED AT',
-            dataIndex: 'updated_at',
-            align: 'right',
-            width: '150px',
-            render: (d, {updated_since}) => {
-              const start = dayjs.utc(d)
-              const end = updated_since || dayjs().utc()
-              const elapsedSeconds = end.diff(start, 'seconds');
-              const days = Math.floor((elapsedSeconds / 3600)/24);
-              const hours = Math.floor((elapsedSeconds / 3600)%24);
-              const minutes = Math.floor((elapsedSeconds % 3600) / 60);
-              const seconds = elapsedSeconds % 60;
-              return (<span style={{fontWeight: 600}}>
-                {days ? `${days}d`: ''} {hours ? `${hours}h`: ''} {minutes ? `${minutes}m` : ''} {seconds ? `${seconds}s` : '0s'} ago</span>)
-            }
-          }, {
-            title: 'BARANGAY',
-            dataIndex: 'barangay',
-            align: 'left',
-            width: '150px',
-            render: (d) => (<span style={{textTransform: 'uppercase', fontWeight: 700}}>{d}</span>)
-          }, {
-            title: 'FOCAL PERSON',
-            dataIndex: 'fp',
-            width: 300,
-            render: (d) => (<span style={{textTransform: 'uppercase', fontWeight: 600}}>{d}</span>)
-          }, {
-            title: 'LINERS TOTAL', dataIndex: 'total', align: 'right',
-            width: '150px',
-          }, {
-            title: 'LINERS COMPLETED', dataIndex: 'status_1', align: 'right', sortOrder: 'descend',
-            width: '150px',
-          }, {
-            title: 'LINERS REMAINING', dataIndex: 'status_0', align: 'right',
-            width: '150px',
-          }, {
-            title: 'PROGRESS',
-            fixed: 'right',
-            width: screens.xs ? 100 : 200,
-            render: (_, record) => {
-              return (<ConfigProvider
-                theme={{
-                  token: {
-                    colorText: 'white', fontSize: 12
-                  }
-                }}
-              >
-                <Progress
-                  percent={((record.status_1 / record.total) * 100).toPrecision(3)}
-                  percentPosition={{align: 'center', type: 'inner'}}
-                  size={['100%', 18]}
-                  strokeColor="#24AC58"
-                  trailColor="lightgray"
-                  format={(percent) => (<span style={{fontWeight: 500}}>{percent}%</span>)}
-                />
-              </ConfigProvider>)
-            }
-          },
-
-          ]}
-          // footer={
-          //
-          // }
+          columns={getColumns()}
         ></Table>
       </Flex>
     </Layout>);
