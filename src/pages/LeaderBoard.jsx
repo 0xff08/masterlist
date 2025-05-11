@@ -263,7 +263,7 @@ function LeaderBoard() {
                   suffix={<> / {new Intl.NumberFormat('en-US').format(overall.total_fp - overall.completed_fp)}</>}
                 />
                 <Progress size={100}
-                          percent={((overall.in_progress_fp / (overall.total_fp - overall.completed_fp)) * 100).toPrecision(3)}
+                          percent={(((overall.in_progress_fp - overall.completed_fp)/ (overall.total_fp - overall.completed_fp)) * 100).toPrecision(3)}
                           type='dashboard' strokeColor='#ff6a00'/>
               </Flex>
             </Card>
