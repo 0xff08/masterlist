@@ -234,14 +234,14 @@ function LeaderBoard() {
                   title={
                     <span style={{fontWeight: 500}}>FOCAL PERSON<br/>REMAINING</span>
                   }
-                  value={overall.total_fp - (overall.in_progress_fp + overall.completed_fp)}
+                  value={overall.total_fp - (overall.in_progress_fp)}
                   precision={0}
                   valueStyle={{color: '#706e6e'}}
                   suffix={<> / {new Intl.NumberFormat('en-US').format(overall.total_fp)}</>}
                 />
                 <Progress
                   size={100}
-                  percent={(((overall.total_fp - (overall.in_progress_fp + overall.completed_fp)) / (overall.total_fp)) * 100).toPrecision(3)}
+                  percent={(((overall.total_fp - (overall.in_progress_fp)) / (overall.total_fp)) * 100).toPrecision(3)}
                   type='dashboard'
                   strokeColor='#706e6e'/>
               </Flex>
